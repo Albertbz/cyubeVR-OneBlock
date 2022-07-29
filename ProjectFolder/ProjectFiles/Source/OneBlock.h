@@ -31,7 +31,7 @@ public:
 
 	/*
 	* Asks the player whether to create the OneBlock world.
-	* 
+	*
 	* @param printText Whether to print the text that asks.
 	* @param initialSpawn The coordinates of where the player spawned.
 	*/
@@ -39,7 +39,7 @@ public:
 
 	/*
 	* Checks if a hand is in either Yes or No (for askIfCreate).
-	* 
+	*
 	* @param leftHand Whether it is the left hand that is being checked.
 	* @param initialSpawn The coordinates of where the player spawned.
 	*/
@@ -47,11 +47,11 @@ public:
 
 	/*
 	* Checks if the given location is between the two given corners.
-	* 
+	*
 	* @param corner1 The first corner. Should be the smallest in all coordinates.
 	* @param corner2 The second corner. Should be the largest in all coordinates.
 	* @param loc The location to check.
-	* 
+	*
 	* @return Whether the given location is between the two given corners.
 	*/
 	static bool isBetween(CoordinateInCentimeters corner1, CoordinateInCentimeters corner2, CoordinateInCentimeters loc);
@@ -76,7 +76,7 @@ public:
 
 	/*
 	* Checks whether the OneBlock world already exists.
-	* 
+	*
 	* @return Whether the OneBlock world already exists.
 	*/
 	static bool exists();
@@ -84,13 +84,13 @@ public:
 	// Creates the OneBlock world by moving the world files into the WorldData
 	// folder.
 	static void create();
-	
+
 	// Destroys all hint texts in the hintTextHandles.
 	static void destroyHintTexts();
 
 	/*
 	* Removes old hint text (currentHintTextHandle) and spawns the new one.
-	* 
+	*
 	* @param location The location to spawn the hint text at.
 	* @param text The text to have on the hint text.
 	* @param duration The duration of the hint text in seconds, default -1 (infinite).
