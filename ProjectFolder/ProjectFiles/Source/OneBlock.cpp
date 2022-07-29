@@ -1,4 +1,10 @@
 #include "OneBlock.h"
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+
+bool OneBlock::askingIfCreate = false;
+std::vector<void*> OneBlock::hintTextHandles;
 
 OneBlock::OneBlock()
 {
@@ -34,12 +40,12 @@ void OneBlock::load()
 	isLoaded = true;
 }
 
-void OneBlock::askIfOneBlock(bool printText, CoordinateInCentimeters initialSpawn)
+void OneBlock::askIfCreate(bool printText, CoordinateInCentimeters initialSpawn)
 {
 	if (printText) {
-		SpawnHintText(initialSpawn + CoordinateInCentimeters(50, 0, -25), L"Do you want this world to\nbe a OneBlock world?", 60);
-		SpawnHintText(initialSpawn + CoordinateInCentimeters(50, -50, -50), L"Yes", 60);
-		SpawnHintText(initialSpawn + CoordinateInCentimeters(50, 50, -50), L"No", 60);
+		hintTextHandles.push_back(SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"Do you want to create the\nOneBlock world?", 60));
+		hintTextHandles.push_back(SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, -50, -20), L"Yes", 60));
+		hintTextHandles.push_back(SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 50, -20), L"No", 60));
 	}
 
 	checkHand(true, initialSpawn);
@@ -50,28 +56,29 @@ void OneBlock::checkHand(bool leftHand, CoordinateInCentimeters initialSpawn)
 {
 	CoordinateInCentimeters handLoc = GetHandLocation(leftHand);
 
-	if (isBetween(initialSpawn + CoordinateInCentimeters(25, -75, -50), initialSpawn + CoordinateInCentimeters(75, -25, 0), handLoc)) {
+	if (isBetween(initialSpawn + CoordinateInCentimeters(30, -70, -40), initialSpawn + CoordinateInCentimeters(70, -30, 0), handLoc)) {
 		PlayHapticFeedbackOnHand(leftHand, 0.1, 1, 1);
-		createOneBlock();
-		isOneBlock = true;
-		isLoaded = true;
-		SaveModDataString(L"OneBlock\\isOneBlock", L"1");
+		askingIfCreate = false;
+		destroyHintTexts();
+		void* handle = SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"Okay. The world is now being created.\nPlease wait.", -1);
+		create();
+		DestroyHintText(handle);
+		SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"The world has now been created.\nGo ahead and leave this world\nand join it!", 10);
 	}
-	else if (isBetween(initialSpawn + CoordinateInCentimeters(25, 25, -50), initialSpawn + CoordinateInCentimeters(75, 75, 0), handLoc)) {
+	else if (isBetween(initialSpawn + CoordinateInCentimeters(30, 30, -40), initialSpawn + CoordinateInCentimeters(70, 70, 0), handLoc)) {
 		PlayHapticFeedbackOnHand(leftHand, 0.1, 1, 1);
-		SpawnHintText(initialSpawn + CoordinateInCentimeters(50, 50, -25), L"Choice confirmed! These popups will\ndisappear in under a minute.", 10);
-		isOneBlock = false;
-		isLoaded = true;
-		SaveModDataString(L"OneBlock\\isOneBlock", L"0");
+		askingIfCreate = false;
+		destroyHintTexts();
+		SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"Alright. You will be asked again the\nnext time you join a world if\n you change your mind.", 10);
 	}
 }
 
 bool OneBlock::isBetween(CoordinateInCentimeters corner1, CoordinateInCentimeters corner2, CoordinateInCentimeters loc)
 {
-	return loc.X > corner1.X && loc.X < corner2.X && loc.Y > corner1.Y && loc.Y < corner2.Y && loc.Z > corner1.Z && loc.Z < corner2.Z;
+	return loc.X >= corner1.X && loc.X <= corner2.X && loc.Y >= corner1.Y && loc.Y <= corner2.Y && loc.Z >= corner1.Z && loc.Z <= corner2.Z;
 }
 
-void OneBlock::createOneBlock()
+void OneBlock::createVoidWorld()
 {
 	SetBlock(center, EBlockType::Grass);
 	SetPlayerLocation(center + CoordinateInBlocks(0, 0, 1));
@@ -128,5 +135,49 @@ void OneBlock::updatePhase()
 	}
 	else {
 		phase = 3;
+	}
+}
+
+bool OneBlock::exists()
+{
+	std::wstring path = GetThisModGlobalSaveFolderPath(L"OneBlock");
+	
+	std::string resString;
+	bool res = false;
+
+	std::ifstream file(path + L"exists.txt");
+
+	while (std::getline(file, resString)) {
+		res = std::stoi(resString);
+	}
+
+	file.close();
+
+	return res;
+}
+
+void OneBlock::create()
+{
+	// Copy the world from the install folder to the WorldData folder
+	std::wstring oldPath = GetThisModInstallFolderPath() + L"TemplateWorld";
+	std::wstring saveFolderPath = GetThisModSaveFolderPath(L"");
+
+	std::wstring newPath = saveFolderPath.substr(0, saveFolderPath.find(L"WorldData")+9) + L"\\OneBlock";
+
+	std::filesystem::copy(oldPath, newPath, std::filesystem::copy_options::recursive);
+
+	// Write to the global save file that a OneBlock world now exists
+	std::wstring globalSaveFolderPath = GetThisModGlobalSaveFolderPath(L"OneBlock");
+	std::ofstream file(globalSaveFolderPath + L"exists.txt");
+	file << "1";
+	file.close();
+}
+
+void OneBlock::destroyHintTexts()
+{
+	auto it = hintTextHandles.begin();
+	while (it != hintTextHandles.end()) {
+		DestroyHintText(*it);
+		it = hintTextHandles.erase(it);
 	}
 }

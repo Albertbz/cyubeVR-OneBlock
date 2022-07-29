@@ -10,8 +10,6 @@ OneBlock world;
 
 // Number of ticks since world was loaded. Used for askIfOneBlock method.
 int ticksSinceLoad;
-// Whether to print the text when asking if new world is a OneBlock world. Ugly way of doing it lmao
-bool printText;
 // Where the player spawned when creating the world if it's a new world.
 CoordinateInCentimeters initialSpawn;
 
@@ -52,24 +50,13 @@ void Event_BlockHitByTool(CoordinateInBlocks At, UniqueID CustomBlockID, wString
 // Run X times per second, as specified in the TickRate variable at the top
 void Event_Tick()
 {
-	if (world.isLoaded) {
-		/*
-		if (world.isOneBlock) {
-			if (GetBlock(world.center).Type == EBlockType::Air){
-				world.setOneBlock();
-			}
-		}
-		*/
-	}
-	else {
+	if (OneBlock::askingIfCreate) {
 		if (ticksSinceLoad < 600) {
-			world.askIfOneBlock(printText, initialSpawn);
-			printText = false;
+			OneBlock::askIfCreate(false, initialSpawn);
 			ticksSinceLoad++;
 		}
 		else {
-			SaveModDataString(L"OneBlock\\isOneBlock", L"0");
-			world.isLoaded = true;
+			OneBlock::askingIfCreate = false;
 		}
 	}
 }
@@ -79,13 +66,15 @@ void Event_Tick()
 // Run once when the world is loaded
 void Event_OnLoad(bool CreatedNewWorld)
 {
-	if (CreatedNewWorld) { 
-		ticksSinceLoad = 0;
-		printText = true;
-		initialSpawn = GetPlayerLocationHead();
-	}
-	else { // If not a new world, load it.
+	if (OneBlock::exists()) {
+		OneBlock::askingIfCreate = false;
 		world.load();
+	}
+	else {
+		ticksSinceLoad = 0;
+		initialSpawn = GetPlayerLocationHead();
+		OneBlock::askingIfCreate = true;
+		OneBlock::askIfCreate(true, initialSpawn);
 	}
 }
 

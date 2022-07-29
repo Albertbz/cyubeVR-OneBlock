@@ -13,6 +13,10 @@ public:
 	int amountDestroyed;
 	// The phase that the world is currently in.
 	int phase;
+	// Whether the player is currently being asked if they want to create the OneBlock world.
+	static bool askingIfCreate;
+	// A vector with all currently active hintTextHandles.
+	static std::vector<void*> hintTextHandles;
 
 	// Constructor for the OneBlock class.
 	OneBlock();
@@ -24,21 +28,20 @@ public:
 	void load();
 
 	/*
-	* Asks the player whether the newly created world is a OneBlock world and
-	* if yes, makes it one.
+	* Asks the player whether to create the OneBlock world.
 	* 
 	* @param printText Whether to print the text that asks.
 	* @param initialSpawn The coordinates of where the player spawned.
 	*/
-	void askIfOneBlock(bool printText, CoordinateInCentimeters initialSpawn);
+	static void askIfCreate(bool printText, CoordinateInCentimeters initialSpawn);
 
 	/*
-	* Checks if a hand is in either Yes or No (for askIfOneBlock).
+	* Checks if a hand is in either Yes or No (for askIfCreate).
 	* 
 	* @param leftHand Whether it is the left hand that is being checked.
 	* @param initialSpawn The coordinates of where the player spawned.
 	*/
-	void checkHand(bool leftHand, CoordinateInCentimeters initialSpawn);
+	static void checkHand(bool leftHand, CoordinateInCentimeters initialSpawn);
 
 	/*
 	* Checks if the given location is between the two given corners.
@@ -49,12 +52,12 @@ public:
 	* 
 	* @return Whether the given location is between the two given corners.
 	*/
-	bool isBetween(CoordinateInCentimeters corner1, CoordinateInCentimeters corner2, CoordinateInCentimeters loc);
+	static bool isBetween(CoordinateInCentimeters corner1, CoordinateInCentimeters corner2, CoordinateInCentimeters loc);
 
 	// Creates the OneBlock world by removing a ton of blocks, teleporting the player to 0,0
 	// and placing the singular block there. After this, the world should be ready.
 	// Old method that was only used to make the void world - isn't used anymore.
-	void createOneBlock();
+	void createVoidWorld();
 
 	// Increments the amountDestroyed field.
 	void incrementAmount();
@@ -68,6 +71,18 @@ public:
 	// Updates the phase to the one it's supposed to be according to the amount
 	// of blocks destroyed.
 	void updatePhase();
+
+	/*
+	* Checks whether the OneBlock world already exists.
+	* 
+	* @return Whether the OneBlock world already exists.
+	*/
+	static bool exists();
+
+	// Creates the OneBlock world by moving the world files into the WorldData
+	// folder.
+	static void create();
+	
+	// Destroys all hint texts in the hintTextHandles.
+	static void destroyHintTexts();
 };
-
-
