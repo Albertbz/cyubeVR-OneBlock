@@ -17,6 +17,8 @@ public:
 	static bool askingIfCreate;
 	// A vector with all currently active hintTextHandles.
 	static std::vector<void*> hintTextHandles;
+	// Used for showing amount destroyed and all other hint texts at the same location.
+	void* currentHintTextHandle;
 
 	// Constructor for the OneBlock class.
 	OneBlock();
@@ -85,4 +87,15 @@ public:
 	
 	// Destroys all hint texts in the hintTextHandles.
 	static void destroyHintTexts();
+
+	/*
+	* Removes old hint text (currentHintTextHandle) and spawns the new one.
+	* 
+	* @param location The location to spawn the hint text at.
+	* @param text The text to have on the hint text.
+	* @param duration The duration of the hint text in seconds, default -1 (infinite).
+	* @param sizeMulHor The size multiplier for the horizontal size of the hint text, default 1.
+	* @param sizeMulVer The size multiplier for the vertical size of the hint text, default 1.
+	*/
+	void printHintText(CoordinateInCentimeters location, std::wstring text, float duration = -1, float sizeMul = 1.0F, float sizeMulVer = 1.0F);
 };

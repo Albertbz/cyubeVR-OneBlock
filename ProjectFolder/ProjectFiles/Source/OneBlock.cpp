@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <math.h>
 
 bool OneBlock::askingIfCreate = false;
 std::vector<void*> OneBlock::hintTextHandles;
@@ -13,6 +14,7 @@ OneBlock::OneBlock()
 	this->center = CoordinateInBlocks(0, 0, 200);
 	this->amountDestroyed = 0;
 	this->phase = 1;
+	this->currentHintTextHandle = nullptr;
 }
 
 void OneBlock::loadProgress()
@@ -104,7 +106,45 @@ void OneBlock::incrementAmount()
 
 void OneBlock::printAmountDestroyed()
 {
-	SpawnHintText(center + CoordinateInBlocks(1, 0, 3), L"Amount of blocks destroyed:\n" + std::to_wstring(amountDestroyed), 5);
+	CoordinateInCentimeters loc = center + CoordinateInBlocks(0, 0, 1);
+
+	CoordinateInCentimeters playerLoc = GetPlayerLocationHead();
+	CoordinateInCentimeters directionVector = CoordinateInCentimeters(center) - playerLoc;
+
+	if (playerLoc.X >= -25 && playerLoc.X <= 25 && playerLoc.Y >= -25 && playerLoc.Y <= 25) {
+		directionVector = CoordinateInCentimeters(GetPlayerViewDirection()*1000);
+	}
+
+	float a = directionVector.X * directionVector.X + directionVector.Y * directionVector.Y;
+	float b = 2 * (playerLoc.X * directionVector.X + playerLoc.Y * directionVector.Y);
+	float c = playerLoc.X * playerLoc.X + playerLoc.Y * playerLoc.Y - 1250;
+
+	float d = b * b - 4 * a * c;
+
+	if (d > 0) {
+		float t1 = (-b + sqrt(d)) / (2 * a);
+		float t2 = (-b - sqrt(d)) / (2 * a);
+		float t = 0;
+		if (playerLoc.Z > CoordinateInCentimeters(center).Z + 25) {
+			t = std::max(t1, t2);
+		}
+		else {
+			t = std::min(t1, t2);
+		}
+		float x = playerLoc.X + t * directionVector.X;
+		float y = playerLoc.Y + t * directionVector.Y;
+		loc.X = round(x);
+		loc.Y = round(y);
+	}
+	else if (d == 0) {
+		float t = (-b) / (2 * a);
+		float x = playerLoc.X + t * directionVector.X;
+		float y = playerLoc.Y + t * directionVector.Y;
+		loc.X = round(x);
+		loc.Y = round(y);
+	}
+	
+	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.8, 2);
 }
 
 void OneBlock::setOneBlock()
@@ -180,4 +220,10 @@ void OneBlock::destroyHintTexts()
 		DestroyHintText(*it);
 		it = hintTextHandles.erase(it);
 	}
+}
+
+void OneBlock::printHintText(CoordinateInCentimeters location, std::wstring text, float duration, float sizeMul, float sizeMulVer)
+{
+	DestroyHintText(currentHintTextHandle);
+	currentHintTextHandle = SpawnHintTextAdvanced(location, text, duration, sizeMul, sizeMulVer);
 }
