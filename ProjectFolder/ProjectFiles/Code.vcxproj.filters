@@ -24,6 +24,9 @@
     <ClCompile Include="Source\GameFunctions.cpp">
       <Filter>Source Files\InternalFiles</Filter>
     </ClCompile>
+    <ClCompile Include="Source\OneBlock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GameAPI.h">
@@ -40,6 +43,9 @@
     </ClInclude>
     <ClInclude Include="Source\GameAPI.cpp">
       <Filter>Source Files\InternalFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\OneBlock.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
