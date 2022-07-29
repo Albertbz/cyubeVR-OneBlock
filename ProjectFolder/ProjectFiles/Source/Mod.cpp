@@ -8,9 +8,9 @@
 // The current OneBlock instance for the world.
 OneBlock world;
 
-// Number of ticks since world was loaded. Used for askIfOneBlock method.
+// Number of ticks since world was loaded. Used for askIfCreate method.
 int ticksSinceLoad;
-// Where the player spawned when creating the world if it's a new world.
+// Where the player spawned when opening the world.
 CoordinateInCentimeters initialSpawn;
 
 
@@ -50,6 +50,9 @@ void Event_BlockHitByTool(CoordinateInBlocks At, UniqueID CustomBlockID, wString
 // Run X times per second, as specified in the TickRate variable at the top
 void Event_Tick()
 {
+	// If currently asking the player whether to create the OneBlock world,
+	// and if it hasn't been more than 1 minute since the world was opened,
+	// then keep checking for an answer with askIfCreate.
 	if (OneBlock::askingIfCreate) {
 		if (ticksSinceLoad < 600) {
 			OneBlock::askIfCreate(false, initialSpawn);
@@ -66,11 +69,12 @@ void Event_Tick()
 // Run once when the world is loaded
 void Event_OnLoad(bool CreatedNewWorld)
 {
+	// If the OneBlock world already exists, simply load it.
 	if (OneBlock::exists()) {
 		OneBlock::askingIfCreate = false;
 		world.load();
 	}
-	else {
+	else { // Else, ask the player if they would like to create the OneBlock world.
 		ticksSinceLoad = 0;
 		initialSpawn = GetPlayerLocationHead();
 		OneBlock::askingIfCreate = true;
@@ -100,6 +104,8 @@ void Event_AnyBlockPlaced(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 // Run every time any block is destroyed by the player
 void Event_AnyBlockDestroyed(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 {
+	// If the active world is a OneBlock world, and the destroyed block was the center block, then
+	// increment the amount of times it has been destroyed, print this amount, and set a new block.
 	if (world.isOneBlock) {
 		if (At == world.center) {
 			world.incrementAmount();

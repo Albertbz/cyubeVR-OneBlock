@@ -3,8 +3,6 @@
 class OneBlock
 {
 public:
-	// Whether the currently
-	bool isLoaded;
 	// Whether the currently active world is a OneBlock world.
 	bool isOneBlock;
 	// The center/where the OneBlock is.
@@ -56,8 +54,8 @@ public:
 	*/
 	static bool isBetween(CoordinateInCentimeters corner1, CoordinateInCentimeters corner2, CoordinateInCentimeters loc);
 
-	// Creates the OneBlock world by removing a ton of blocks, teleporting the player to 0,0
-	// and placing the singular block there. After this, the world should be ready.
+	// Creates a Void world by removing a ton of blocks, teleporting the player to 0,0
+	// and placing a singular block there. After this, the world should be ready.
 	// Old method that was only used to make the void world - isn't used anymore.
 	void createVoidWorld();
 
