@@ -61,7 +61,15 @@ void Event_Tick()
 		else {
 			OneBlock::askingIfCreate = false;
 		}
+	}															// Else if already a OneBlock world, then if the player is out
+	else if (world.isOneBlock) {								// of bounds, teleport the player back to 0,0 and tell them they
+		if (OneBlock::isOutOfBounds(GetPlayerLocation())) {		// were out of bounds.
+			SetPlayerLocation(world.center + CoordinateInBlocks(0, 0, 1));
+			world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection(), L"You were out of bounds and have\nbeen teleported back to the center.", 10);
+		}
 	}
+
+
 }
 
 
@@ -98,7 +106,16 @@ void Event_OnExit()
 // Run every time any block is placed by the player
 void Event_AnyBlockPlaced(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 {
-
+	// If the active world is a OneBlock world, and the placed block was out of bounds, then
+	// remove the block and give it back to the player as well as tell the player that the
+	// block they tried to place was out of bounds.
+	if (world.isOneBlock) {
+		if (OneBlock::isOutOfBounds(At)) {
+			SetBlock(At, EBlockType::Air);
+			AddToInventory(Type, 1);
+			world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection(), L"That block was out of bounds.", 5);
+		}
+	}
 }
 
 // Run every time any block is destroyed by the player

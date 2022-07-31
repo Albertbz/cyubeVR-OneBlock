@@ -95,5 +95,15 @@ public:
 	* @param sizeMulHor The size multiplier for the horizontal size of the hint text, default 1.
 	* @param sizeMulVer The size multiplier for the vertical size of the hint text, default 1.
 	*/
-	void printHintText(CoordinateInCentimeters location, std::wstring text, float duration = -1, float sizeMul = 1.0F, float sizeMulVer = 1.0F);
+	void printHintText(CoordinateInCentimeters location, std::wstring text, float duration = -1, float sizeMul = 1, float sizeMulVer = 1, float fontMul = 1);
+
+	/*
+	* Checks whether the location given is out of bounds, with out of bounds being
+	* either below layer 10 or more than 600 blocks out in any direction from 0,0.
+	* 
+	* @return Whether the player is out of bounds.
+	*/
+	static bool isOutOfBounds(CoordinateInBlocks location);
+
+
 };

@@ -80,7 +80,7 @@ void OneBlock::checkHand(bool leftHand, CoordinateInCentimeters initialSpawn)
 		PlayHapticFeedbackOnHand(leftHand, 0.1, 1, 1);
 		askingIfCreate = false;
 		destroyHintTexts();
-		SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"Alright. You will be asked again the\nnext time you join a world if\n you change your mind.", 10);
+		SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"Alright. You will be asked again the\nnext time you join a world if\nyou change your mind.", 10);
 	}
 }
 
@@ -110,7 +110,7 @@ void OneBlock::incrementAmount()
 {
 	amountDestroyed++;
 	SaveModDataString(L"OneBlock\\amountDestroyed", std::to_wstring(amountDestroyed)); // Save progress.
-	updatePhase();
+	updatePhase(); // Update the phase if necessary.
 }
 
 void OneBlock::printAmountDestroyed()
@@ -128,7 +128,7 @@ void OneBlock::printAmountDestroyed()
 		directionVector = CoordinateInCentimeters(GetPlayerViewDirection() * 1000); // Vector to use if on top of center block.
 	}
 
-	// Variables for the quadratic equation.
+	// Variables for the quadratic equation. Possibly no need for float.
 	float a = directionVector.X * directionVector.X + directionVector.Y * directionVector.Y;
 	float b = 2 * (playerLoc.X * directionVector.X + playerLoc.Y * directionVector.Y);
 	float c = playerLoc.X * playerLoc.X + playerLoc.Y * playerLoc.Y - 1250;
@@ -163,7 +163,7 @@ void OneBlock::printAmountDestroyed()
 	// meaning there will always be an intersection because the player is always looking out at the circle.
 
 	// Use the custom method to print the hint text.
-	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.8, 2);
+	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.5, 2, 4);
 }
 
 void OneBlock::setOneBlock()
@@ -247,10 +247,15 @@ void OneBlock::destroyHintTexts()
 	}
 }
 
-void OneBlock::printHintText(CoordinateInCentimeters location, std::wstring text, float duration, float sizeMul, float sizeMulVer)
+void OneBlock::printHintText(CoordinateInCentimeters location, std::wstring text, float duration, float sizeMul, float sizeMulVer, float fontMul)
 {
 	// Remove the old hint text with the saved handle, and spawn the
 	// new one as well as save its handle.
 	DestroyHintText(currentHintTextHandle);
-	currentHintTextHandle = SpawnHintTextAdvanced(location, text, duration, sizeMul, sizeMulVer);
+	currentHintTextHandle = SpawnHintTextAdvanced(location, text, duration, sizeMul, sizeMulVer, fontMul);
+}
+
+bool OneBlock::isOutOfBounds(CoordinateInBlocks location)
+{
+	return location.Z < 10 || location.X < -600 || location.X > 600 || location.Y < -600 || location.Y > 600;
 }
