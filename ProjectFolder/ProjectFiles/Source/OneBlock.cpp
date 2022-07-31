@@ -117,7 +117,7 @@ void OneBlock::printAmountDestroyed()
 {
 	CoordinateInCentimeters loc = center + CoordinateInBlocks(0, 0, 1); // The location to use for the hint text that is spawned, this being the default.
 
-	// Calculate where on a circle with the formula x^2+y^2=1250 to spawn the hint text,
+	// Calculate where on a circle with the formula x^2+y^2=1500 to spawn the hint text,
 	// with the default vector being the location of the player relative to the center - 
 	// but if on top of the center block, use the direction the player is looking instead
 	// because it can look pretty funky otherwise.
@@ -125,45 +125,54 @@ void OneBlock::printAmountDestroyed()
 	CoordinateInCentimeters directionVector = CoordinateInCentimeters(center) - playerLoc; // Default vector to use for calculation.
 
 	if (playerLoc.X >= -25 && playerLoc.X <= 25 && playerLoc.Y >= -25 && playerLoc.Y <= 25) {
-		directionVector = CoordinateInCentimeters(GetPlayerViewDirection() * 1000); // Vector to use if on top of center block.
+		directionVector = CoordinateInCentimeters(GetPlayerViewDirection() * 100); // Vector to use if on top of center block.
 	}
 
 	// Variables for the quadratic equation. Possibly no need for float.
-	float a = directionVector.X * directionVector.X + directionVector.Y * directionVector.Y;
-	float b = 2 * (playerLoc.X * directionVector.X + playerLoc.Y * directionVector.Y);
-	float c = playerLoc.X * playerLoc.X + playerLoc.Y * playerLoc.Y - 1250;
+	int64_t a = directionVector.X * directionVector.X + directionVector.Y * directionVector.Y;
+	int64_t b = 2 * (playerLoc.X * directionVector.X + playerLoc.Y * directionVector.Y);
+	int64_t c = playerLoc.X * playerLoc.X + playerLoc.Y * playerLoc.Y - 1500;
 
-	float d = b * b - 4 * a * c; // The discriminant.
+	int64_t d = b * b - 4 * a * c; // The discriminant.
 
 	if (d > 0) { // Two intersections.
-		float t1 = (-b + sqrt(d)) / (2 * a);
-		float t2 = (-b - sqrt(d)) / (2 * a);
-		float t = 0;
+		double t1 = (-b + sqrt(d)) / (2 * a);
+		double t2 = (-b - sqrt(d)) / (2 * a);
+		double t = 0;
 		if (playerLoc.Z > CoordinateInCentimeters(center).Z + 25) { // If the player's head is above the center block, use the opposite intersection to spawn the hint text at. Otherwise, the hint text will be in the way of the block.
 			t = std::max(t1, t2);
 		}
 		else { // Else, use the first one. Otherwise, the block will be in the way of the hint text.
 			t = std::min(t1, t2);
+			loc.Z = loc.Z - 20;
 		}
-		float x = playerLoc.X + t * directionVector.X;
-		float y = playerLoc.Y + t * directionVector.Y;
-		loc.X = round(x);
-		loc.Y = round(y);
+		double x = playerLoc.X + t * directionVector.X;
+		double y = playerLoc.Y + t * directionVector.Y;
+		loc.X = (int) round(x);
+		loc.Y = (int) round(y);
 	}
 	else if (d == 0) { // One intersection - just use the point found. Should technically never happen.
-		float t = (-b) / (2 * a);
-		float x = playerLoc.X + t * directionVector.X;
-		float y = playerLoc.Y + t * directionVector.Y;
-		loc.X = round(x);
-		loc.Y = round(y);
+		double t = (-b) / (2.0 * a);
+		double x = playerLoc.X + t * directionVector.X;
+		double y = playerLoc.Y + t * directionVector.Y;
+		loc.X = (int) round(x);
+		loc.Y = (int) round(y);
 	}
 	// No intersections can also technically never happen because either the player is outside the block,
 	// where the center is then used to calculate the vector to use (meaning there will always be two intersections),
 	// or the player is inside the block, where the direction the player is looking is used as the vector,
 	// meaning there will always be an intersection because the player is always looking out at the circle.
 
+	// Calculate the size of the hint text to be used according to the amount of digits in amountDestroyed.
+	int digits = numDigits(amountDestroyed);
+	float change = 1.0F;
+
+	for (int i = 0; i < digits - 2; i++) {
+		change += 0.25F;
+	}
+
 	// Use the custom method to print the hint text.
-	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.5, 2, 4);
+	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.3F * change, 2.0F / change, 10);
 }
 
 void OneBlock::setOneBlock()
@@ -191,7 +200,7 @@ void OneBlock::updatePhase()
 	if (amountDestroyed < 3) {
 		phase = 1;
 	}
-	else if (amountDestroyed < 10) {
+	else if (amountDestroyed < 5) {
 		phase = 2;
 	}
 	else {
@@ -258,4 +267,14 @@ void OneBlock::printHintText(CoordinateInCentimeters location, std::wstring text
 bool OneBlock::isOutOfBounds(CoordinateInBlocks location)
 {
 	return location.Z < 10 || location.X < -600 || location.X > 600 || location.Y < -600 || location.Y > 600;
+}
+
+int OneBlock::numDigits(int number)
+{
+	int digits = 0;
+	while (number) {
+		number /= 10;
+		digits++;
+	}
+	return digits;
 }

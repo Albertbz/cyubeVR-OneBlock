@@ -92,8 +92,9 @@ public:
 	* @param location The location to spawn the hint text at.
 	* @param text The text to have on the hint text.
 	* @param duration The duration of the hint text in seconds, default -1 (infinite).
-	* @param sizeMulHor The size multiplier for the horizontal size of the hint text, default 1.
+	* @param sizeMul The size multiplier for the size of the hint text, default 1.
 	* @param sizeMulVer The size multiplier for the vertical size of the hint text, default 1.
+	* @param fontMul The size multiplier for the font of the hint text, default 1.
 	*/
 	void printHintText(CoordinateInCentimeters location, std::wstring text, float duration = -1, float sizeMul = 1, float sizeMulVer = 1, float fontMul = 1);
 
@@ -105,5 +106,13 @@ public:
 	*/
 	static bool isOutOfBounds(CoordinateInBlocks location);
 
+	/*
+	* Calculates the amount of digits in a given number.
+	* 
+	* @param number The number to get the amount of digits of.
+	* 
+	* @return The amount of digits in number.
+	*/
+	static int numDigits(int number);
 
 };
