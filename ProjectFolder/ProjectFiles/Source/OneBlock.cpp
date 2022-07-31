@@ -165,14 +165,14 @@ void OneBlock::printAmountDestroyed()
 
 	// Calculate the size of the hint text to be used according to the amount of digits in amountDestroyed.
 	int digits = numDigits(amountDestroyed);
-	float change = 1.0F;
+	float offset = 1.0F;
 
-	for (int i = 0; i < digits - 2; i++) {
-		change += 0.25F;
+	for (int i = 0; i < digits - 2; i++) { // Offset for every new digit after 2 digits
+		offset += 0.25F;
 	}
 
 	// Use the custom method to print the hint text.
-	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.3F * change, 2.0F / change, 10);
+	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.3F * offset, 2.0F / offset, 10);
 }
 
 void OneBlock::setOneBlock()
