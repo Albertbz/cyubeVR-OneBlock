@@ -13,7 +13,8 @@ OneBlock::OneBlock()
 	this->isOneBlock = false;
 	this->center = CoordinateInBlocks(0, 0, 200);
 	this->amountDestroyed = 0;
-	this->phase = 1;
+	this->phases = {};
+	this->currentPhase = Phase();
 	this->currentHintTextHandle = nullptr;
 }
 
@@ -26,7 +27,18 @@ void OneBlock::loadProgress()
 	}
 
 	// Update the phase to match with amountDestroyed.
-	updatePhase();
+	updateCurrentPhase();
+}
+
+void OneBlock::loadPhases()
+{
+	// Get the install folder path and add "Phases" to get the path to the Phases folder.
+	std::wstring phasesDirectoryPath = GetThisModInstallFolderPath() + L"Phases";
+
+	// Iterate through all of the files in the Phases folder and add the phases to the phases field.
+	for (const auto& entry : std::filesystem::directory_iterator(phasesDirectoryPath)) {
+		phases.push_back(Phase(entry.path()));
+	}
 }
 
 void OneBlock::load()
@@ -40,8 +52,9 @@ void OneBlock::load()
 		isOneBlock = false;
 	}
 
-	// If it was indeed a OneBlock world, then load progress.
+	// If it was indeed a OneBlock world, then load phases and progress.
 	if (isOneBlock) {
+		loadPhases();
 		loadProgress();
 	}
 }
@@ -110,7 +123,10 @@ void OneBlock::incrementAmount()
 {
 	amountDestroyed++;
 	SaveModDataString(L"OneBlock\\amountDestroyed", std::to_wstring(amountDestroyed)); // Save progress.
-	updatePhase(); // Update the phase if necessary.
+	// Check whether the phase has changed.
+	if (!currentPhase.isInPhase(amountDestroyed)) {
+		updateCurrentPhase();
+	}
 }
 
 void OneBlock::printAmountDestroyed()
@@ -148,15 +164,15 @@ void OneBlock::printAmountDestroyed()
 		}
 		double x = playerLoc.X + t * directionVector.X;
 		double y = playerLoc.Y + t * directionVector.Y;
-		loc.X = (int) round(x);
-		loc.Y = (int) round(y);
+		loc.X = (int)round(x);
+		loc.Y = (int)round(y);
 	}
 	else if (d == 0) { // One intersection - just use the point found. Should technically never happen.
 		double t = (-b) / (2.0 * a);
 		double x = playerLoc.X + t * directionVector.X;
 		double y = playerLoc.Y + t * directionVector.Y;
-		loc.X = (int) round(x);
-		loc.Y = (int) round(y);
+		loc.X = (int)round(x);
+		loc.Y = (int)round(y);
 	}
 	// No intersections can also technically never happen because either the player is outside the block,
 	// where the center is then used to calculate the vector to use (meaning there will always be two intersections),
@@ -177,34 +193,19 @@ void OneBlock::printAmountDestroyed()
 
 void OneBlock::setOneBlock()
 {
-	// TODO - Placeholder phases for the time being.
-	switch (phase)
-	{
-	case 1:
-		SetBlock(center, EBlockType::Grass);
-		break;
-	case 2:
-		SetBlock(center, EBlockType::TreeWood);
-		break;
-	case 3:
-		SetBlock(center, EBlockType::Stone);
-		break;
-	default:
-		break;
+	BlockInfo blockToSet = currentPhase.getRandomBlock();
+	if (blockToSet.Type != EBlockType::Air) {
+		SetBlock(center, blockToSet);
 	}
 }
 
-void OneBlock::updatePhase()
+void OneBlock::updateCurrentPhase()
 {
-	// TODO - Placeholder phases for the time being.
-	if (amountDestroyed < 3) {
-		phase = 1;
-	}
-	else if (amountDestroyed < 5) {
-		phase = 2;
-	}
-	else {
-		phase = 3;
+	for (Phase p : phases) {
+		if (p.isInPhase(amountDestroyed)) {
+			currentPhase = p;
+			break;
+		}
 	}
 }
 
@@ -213,6 +214,7 @@ bool OneBlock::exists()
 	// Get the path to the folder where the data is stored and read the
 	// exists.txt file there to see whether the OneBlock world already
 	// exists. Simple stuff.
+
 	std::wstring path = GetThisModGlobalSaveFolderPath(L"OneBlock");
 
 	std::string resString;

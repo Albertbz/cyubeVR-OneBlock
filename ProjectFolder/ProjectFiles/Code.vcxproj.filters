@@ -27,6 +27,12 @@
     <ClCompile Include="Source\OneBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Phase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GameAPI.h">
@@ -45,6 +51,12 @@
       <Filter>Source Files\InternalFiles</Filter>
     </ClInclude>
     <ClInclude Include="Source\OneBlock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Phase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

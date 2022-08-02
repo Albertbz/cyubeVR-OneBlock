@@ -11,12 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Misc.cpp" />
     <ClCompile Include="Source\OneBlock.cpp" />
+    <ClCompile Include="Source\Phase.cpp" />
     <ClInclude Include="Source\GameAPI.cpp" />
     <ClCompile Include="Source\GameFunctions.cpp" />
+    <ClInclude Include="Source\Misc.h" />
     <ClInclude Include="Source\Mod.cpp" />
     <ClCompile Include="Source\Internals.cpp" />
     <ClInclude Include="Source\OneBlock.h" />
+    <ClInclude Include="Source\Phase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GameAPI.h" />

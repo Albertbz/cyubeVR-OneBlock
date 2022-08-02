@@ -1,5 +1,7 @@
 #pragma once
 #include "GameAPI.h"
+#include "Phase.h"
+
 class OneBlock
 {
 public:
@@ -9,8 +11,10 @@ public:
 	CoordinateInBlocks center;
 	// The amount of times the OneBlock has been destroyed.
 	int amountDestroyed;
+	// All OneBlock phases.
+	std::vector<Phase> phases;
 	// The phase that the world is currently in.
-	int phase;
+	Phase currentPhase;
 	// Whether the player is currently being asked if they want to create the OneBlock world.
 	static bool askingIfCreate;
 	// A vector with all currently active hintTextHandles.
@@ -23,6 +27,9 @@ public:
 
 	// Loads the progress of the currently active OneBlock world.
 	void loadProgress();
+
+	// Loads the phases from the install folder into the phases field.
+	void loadPhases();
 
 	// Checks whether the currently active world is a OneBlock world and loads accordingly.
 	void load();
@@ -70,7 +77,7 @@ public:
 
 	// Updates the phase to the one it's supposed to be according to the amount
 	// of blocks destroyed.
-	void updatePhase();
+	void updateCurrentPhase();
 
 	/*
 	* Checks whether the OneBlock world already exists.
