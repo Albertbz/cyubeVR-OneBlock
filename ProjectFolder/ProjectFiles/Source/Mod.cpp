@@ -15,12 +15,12 @@ int ticksSinceLoad;
 // Where the player spawned when opening the world.
 CoordinateInCentimeters initialSpawn;
 
-
 /************************************************************
 	Config Variables (Set these to whatever you need. They are automatically read by the game.)
 *************************************************************/
 
-UniqueID ThisModUniqueIDs[] = { 0 }; // All the UniqueIDs this mod manages. Functions like Event_BlockPlaced are only called for blocks of IDs mentioned here. 
+UniqueID ThisModUniqueIDs[] = { lootBlockID, dirtBlockID, grassBlockID, sandBlockID, stoneBlockID,
+								woodLogBirchBlockID, woodLogDarkBlockID }; // All the UniqueIDs this mod manages. Functions like Event_BlockPlaced are only called for blocks of IDs mentioned here. 
 
 float TickRate = 10;				 // Set how many times per second Event_Tick() is called. 0 means the Event_Tick() function is never called.
 
@@ -38,7 +38,29 @@ void Event_BlockPlaced(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved
 // Run every time a block is destroyed
 void Event_BlockDestroyed(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved)
 {
-
+	switch (CustomBlockID) {
+	case lootBlockID:
+		world.giveLoot();
+		break;
+	case dirtBlockID:
+		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::Dirt));
+		break;
+	case grassBlockID:
+		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::Dirt));
+		break;
+	case sandBlockID:
+		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::Sand));
+		break;
+	case stoneBlockID:
+		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::StoneMined));
+		break;
+	case woodLogBirchBlockID:
+		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::TreeWoodBright));
+		break;
+	case woodLogDarkBlockID:
+		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::TreeWood));
+		break;
+	}
 }
 
 

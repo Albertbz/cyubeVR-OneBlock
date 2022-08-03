@@ -1,6 +1,9 @@
 #pragma once
 #include "GameAPI.h"
+#include "ModBlocks.h"
 
+// A simple struct to keep track of block choices.
+// Has a block and its chance of being placed.
 struct BlockChoice {
 	// The block.
 	BlockInfo block;
@@ -16,16 +19,62 @@ struct BlockChoice {
 	BlockChoice(BlockInfo block, int chance);
 };
 
+// A simple struct to keep track of loot choices.
+// Has a type, a minAmount and a maxAmount.
+struct LootChoice {
+	// The type of the loot.
+	BlockInfo type;
+	// The minimum amount of the loot.
+	int minAmount;
+	// The maximum amount of the loot.
+	int maxAmount;
+
+	/*
+	* Constructor for the LootChoice struct.
+	* 
+	* @param type The type of the loot.
+	* @param minAmount The minimum amount of the loot.
+	* @param maxAmount The maximum amount of the loot.
+	*/
+	LootChoice(BlockInfo type, int minAmount, int maxAmount);
+};
+
+// A simple struct to keep track of some loot.
+// Has a type and an amount.
+struct Loot {
+	// The type of the loot.
+	BlockInfo type;
+	// The amount of the loot.
+	int amount;
+
+	/*
+	* Constructor for the Loot struct.
+	* 
+	* @param type The type of the loot.
+	* @param amount The amount of the loot.
+	*/
+	Loot(BlockInfo type, int amount);
+};
+
 /*
 * Figures out what BlockInfo a given wstring corresponds to (for
-* certain blocks)
+* loot).
+* 
+* @param typeString The type given in wstring format.
+* 
+* @return The BlockInfo version of the given type.
+*/
+BlockInfo getLootBlockInfoFromWString(std::wstring typeString);
+
+/*
+* Figures out what BlockInfo a given wstring corresponds to (for
+* the OneBlock).
 * 
 * @param blockString The block given in wstring format.
 * 
 * @return The BlockInfo version of the given block.
 */
-BlockInfo getBlockInfoFromWString(std::wstring blockString);
-
+BlockInfo getBlockBlockInfoFromWString(std::wstring blockString);
 
 /******************************************************
  Moved functions from GameAPI.cpp because they can only 

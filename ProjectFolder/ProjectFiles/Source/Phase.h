@@ -2,6 +2,9 @@
 #include "GameAPI.h"
 #include "Misc.h"
 
+// A class to keep track of a phase.
+// Has a name, a start, an end, some blockChoices
+// and some lootChoices.
 class Phase
 {
 public:
@@ -11,8 +14,10 @@ public:
 	int start;
 	// The point at which the phase ends.
 	int end;
-	// All of the choices when it comes to block. Has the block and the chance of it being placed.
+	// All of the choices when it comes to blocks. Has the blocks and the chance of them being placed.
 	std::vector<BlockChoice> blockChoices;
+	// All of the choices when it comes to loot. Has the loot types and their min and max amounts.
+	std::vector<LootChoice> lootChoices;
 
 	// Simple constructor that makes an "empty" phase.
 	Phase();
@@ -40,4 +45,12 @@ public:
 	* @return Whether the given amountDestroyed is in the phase.
 	*/
 	bool isInPhase(int amountDestroyed);
+
+	/*
+	* Chooses some random amount of loot from the possible
+	* loot in current phase.
+	* 
+	* @return A vector with the loot.
+	*/
+	std::vector<Loot> getRandomLoot();
 };

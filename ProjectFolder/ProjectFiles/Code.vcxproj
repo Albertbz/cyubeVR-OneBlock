@@ -19,6 +19,7 @@
     <ClInclude Include="Source\Misc.h" />
     <ClInclude Include="Source\Mod.cpp" />
     <ClCompile Include="Source\Internals.cpp" />
+    <ClInclude Include="Source\ModBlocks.h" />
     <ClInclude Include="Source\OneBlock.h" />
     <ClInclude Include="Source\Phase.h" />
   </ItemGroup>

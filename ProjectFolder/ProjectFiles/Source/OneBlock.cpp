@@ -123,6 +123,7 @@ void OneBlock::incrementAmount()
 {
 	amountDestroyed++;
 	SaveModDataString(L"OneBlock\\amountDestroyed", std::to_wstring(amountDestroyed)); // Save progress.
+	
 	// Check whether the phase has changed.
 	if (!currentPhase.isInPhase(amountDestroyed)) {
 		updateCurrentPhase();
@@ -193,14 +194,20 @@ void OneBlock::printAmountDestroyed()
 
 void OneBlock::setOneBlock()
 {
+	// Gets a random block from the possible blocks in the current phase,
+	// and then sets it.
+
 	BlockInfo blockToSet = currentPhase.getRandomBlock();
-	if (blockToSet.Type != EBlockType::Air) {
+	if (blockToSet.Type != EBlockType::Invalid) {
 		SetBlock(center, blockToSet);
 	}
 }
 
 void OneBlock::updateCurrentPhase()
 {
+	// Goes through all of the possible phases and updates the current
+	// phase to be the one it should be.
+
 	for (Phase p : phases) {
 		if (p.isInPhase(amountDestroyed)) {
 			currentPhase = p;
@@ -251,6 +258,7 @@ void OneBlock::create()
 void OneBlock::destroyHintTexts()
 {
 	// Simply go through all of the hint text handles and destroy them.
+
 	auto it = hintTextHandles.begin();
 	while (it != hintTextHandles.end()) {
 		DestroyHintText(*it);
@@ -262,6 +270,7 @@ void OneBlock::printHintText(CoordinateInCentimeters location, std::wstring text
 {
 	// Remove the old hint text with the saved handle, and spawn the
 	// new one as well as save its handle.
+
 	DestroyHintText(currentHintTextHandle);
 	currentHintTextHandle = SpawnHintTextAdvanced(location, text, duration, sizeMul, sizeMulVer, fontMul);
 }
@@ -279,4 +288,16 @@ int OneBlock::numDigits(int number)
 		digits++;
 	}
 	return digits;
+}
+
+void OneBlock::giveLoot()
+{
+	// Get some random loot from the current phase, and then
+	// give it to the player.
+
+	std::vector<Loot> loot = currentPhase.getRandomLoot();
+
+	for (Loot l : loot) {
+		AddToInventory(l.type, l.amount);
+	}
 }

@@ -2,6 +2,7 @@
 #include "GameAPI.h"
 #include "Phase.h"
 
+// The main class for this project.
 class OneBlock
 {
 public:
@@ -122,4 +123,6 @@ public:
 	*/
 	static int numDigits(int number);
 
+	// Gives the player loot from the current phase.
+	void giveLoot();
 };
