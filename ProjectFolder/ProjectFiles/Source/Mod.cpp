@@ -134,10 +134,17 @@ void Event_AnyBlockPlaced(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 	// remove the block and give it back to the player as well as tell the player that the
 	// block they tried to place was out of bounds.
 	if (world.isOneBlock) {
-		if (OneBlock::isOutOfBounds(At)) {
-			SetBlock(At, EBlockType::Air);
-			AddToInventory(Type, 1);
-			world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection(), L"Block out of bounds.", 5);
+		if (Type.Type != EBlockType::Air) { // If this check isn't done, doing SetBlock(At, EBlockType::Air) will make it loop forever.
+			if (OneBlock::isOutOfBounds(At)) {
+				SetBlock(At, EBlockType::Air);
+				AddToInventory(Type, 1);
+				world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"Block out of bounds.", 5);
+			}
+			else if (At == world.center + CoordinateInBlocks(0, 0, 1) || At == world.center + CoordinateInBlocks(0, 0, 2) || At == world.center + CoordinateInBlocks(0, 0, 3) || At == world.center + CoordinateInBlocks(0, 0, 4)) {
+				SetBlock(At, EBlockType::Air);
+				AddToInventory(Type, 1);
+				world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"You can't place a block\non the 4 blocks\nabove the OneBlock.", 5);
+			}
 		}
 	}
 }

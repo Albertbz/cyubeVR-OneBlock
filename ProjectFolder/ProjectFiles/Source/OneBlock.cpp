@@ -199,6 +199,11 @@ void OneBlock::setOneBlock()
 
 	BlockInfo blockToSet = currentPhase.getRandomBlock();
 	if (blockToSet.Type != EBlockType::Invalid) {
+		// If it's a grass block that is being set, sometimes set some foliage
+		// on top of the block as well.
+		if (blockToSet.CustomBlockID == grassBlockID) {
+
+		}
 		SetBlock(center, blockToSet);
 	}
 }
