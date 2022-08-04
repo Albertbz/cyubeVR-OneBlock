@@ -4,7 +4,7 @@
 
 // A class to keep track of a phase.
 // Has a name, a start, an end, some blockChoices
-// and some lootChoices.
+// and some pools.
 class Phase
 {
 public:
@@ -17,7 +17,7 @@ public:
 	// All of the choices when it comes to blocks. Has the blocks and the chance of them being placed.
 	std::vector<BlockChoice> blockChoices;
 	// All of the choices when it comes to loot. Has the loot types and their min and max amounts.
-	std::vector<LootChoice> lootChoices;
+	std::vector<Pool> pools;
 
 	// Simple constructor that makes an "empty" phase.
 	Phase();

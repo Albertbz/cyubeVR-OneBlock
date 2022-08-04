@@ -6,6 +6,7 @@
 
 bool OneBlock::askingIfCreate = false;
 std::vector<void*> OneBlock::hintTextHandles;
+bool OneBlock::ignoreBlockPlacement = false;
 
 OneBlock::OneBlock()
 {
@@ -202,7 +203,31 @@ void OneBlock::setOneBlock()
 		// If it's a grass block that is being set, sometimes set some foliage
 		// on top of the block as well.
 		if (blockToSet.CustomBlockID == grassBlockID) {
+			int randomInt = GetRandomInt_2<0, 99>();
+			ignoreBlockPlacement = true;
 
+			// Hardcoded chances.
+			if (randomInt < 2) { // 2% chance
+				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::FlowerRainbow);
+			}
+			else if (randomInt < 7) { // 5% chance
+				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower1);
+			}
+			else if (randomInt < 12) { // 5% chance
+				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower2);
+			}
+			else if (randomInt < 17) { // 5% chance
+				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower3);
+			}
+			else if (randomInt < 22) { // 5% chance
+				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower4);
+			}
+			else if (randomInt < 37) { // 15% chance
+				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::GrassFoliage);
+			}
+			else {
+				ignoreBlockPlacement = false;
+			}
 		}
 		SetBlock(center, blockToSet);
 	}
@@ -298,11 +323,23 @@ int OneBlock::numDigits(int number)
 void OneBlock::giveLoot()
 {
 	// Get some random loot from the current phase, and then
-	// give it to the player.
+	// give it to the player. Also spawn a hint text that
+	// tells the player what they got.
 
+	// Get the random loot.
 	std::vector<Loot> loot = currentPhase.getRandomLoot();
 
+	std::wstring message = L"You have been given:";
+
+	// Add loot to player's inventory and append to the message.
 	for (Loot l : loot) {
 		AddToInventory(l.type, l.amount);
+		message = message + + L"\n" + std::to_wstring(l.amount) + L" ";
+		l.amount > 1 ? message = message + getPluralWString(getWStringFromBlockInfo(l.type)) : message = message + getWStringFromBlockInfo(l.type);
 	}
+	// Calculate the vertical size of the hint text.
+	size_t differentLoot = loot.size();
+	float sizeMulVer = differentLoot - 2 < 1 ? 0.0F : differentLoot - 2;
+	// Spawn hint text.
+	SpawnHintTextAdvanced(center + CoordinateInBlocks(0, 0, 1), message, 5, 1, 1 + sizeMulVer * 0.3F);
 }

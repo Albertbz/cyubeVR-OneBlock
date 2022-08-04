@@ -22,6 +22,8 @@ public:
 	static std::vector<void*> hintTextHandles;
 	// Used for showing amount destroyed and all other hint texts at the same location.
 	void* currentHintTextHandle;
+	// Whether to ignore when a block is placed.
+	static bool ignoreBlockPlacement;
 
 	// Constructor for the OneBlock class.
 	OneBlock();

@@ -35,6 +35,7 @@ struct LootChoice {
 	* @param type The type of the loot.
 	* @param minAmount The minimum amount of the loot.
 	* @param maxAmount The maximum amount of the loot.
+	* @param poolNym The pool that the loot is in.
 	*/
 	LootChoice(BlockInfo type, int minAmount, int maxAmount);
 };
@@ -56,6 +57,21 @@ struct Loot {
 	Loot(BlockInfo type, int amount);
 };
 
+struct Pool {
+	// The loot choices in the pool.
+	std::vector<LootChoice> lootChoices;
+	// The number of the pool.
+	int poolNum;
+
+	/*
+	* Constructor for the Pool struct.
+	* 
+	* @param lootChoices The loot choices in the pool.
+	* @param poolNum Thhe number of the pool.
+	*/
+	Pool(std::vector<LootChoice> lootChoices, int poolNum);
+};
+
 /*
 * Figures out what BlockInfo a given wstring corresponds to (for
 * loot).
@@ -75,6 +91,24 @@ BlockInfo getLootBlockInfoFromWString(std::wstring typeString);
 * @return The BlockInfo version of the given block.
 */
 BlockInfo getBlockBlockInfoFromWString(std::wstring blockString);
+
+/*
+* Converts a BlockInfo into a wstring (for loot).
+* 
+* @param type The type of the loot.
+* 
+* @return The wstring version of the given type.
+*/
+std::wstring getWStringFromBlockInfo(BlockInfo type);
+
+/*
+* Gets the plural version of the given wstring (for loot).
+* 
+* @param type The type of the loot.
+* 
+* @return The plural version of the type.
+*/
+std::wstring getPluralWString(std::wstring type);
 
 /******************************************************
  Moved functions from GameAPI.cpp because they can only 
