@@ -28,7 +28,7 @@ void OneBlock::loadProgress()
 	}
 
 	// Update the phase to match with amountDestroyed.
-	updateCurrentPhase();
+	updateCurrentPhase(false);
 }
 
 void OneBlock::loadPhases()
@@ -55,6 +55,18 @@ void OneBlock::load()
 
 	// If it was indeed a OneBlock world, then load phases and progress.
 	if (isOneBlock) {
+		// If somehow the OneBlock has disappeared, this will set it back.
+		if (GetBlock(center).Type == EBlockType::Air) {
+			setOneBlock();
+		}
+
+		// Check if first time world is loaded.
+		LoadModDataString(L"OneBlock\\isFirstLoad", loadedString);
+		if (std::stoi(loadedString)) {
+			printHintText(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"Welcome to OneBlock!\nIf there's ever anything you're unsure of,\ncheck the tutorial in the briefcase - the answer might be there.\nIf it isn't, then feel free to ask on the Workshop.\nTo begin, simply break the block underneath you.\nHave fun!", -1);
+			SaveModDataString(L"OneBlock\\isFirstLoad", L"0");
+		}
+
 		loadPhases();
 		loadProgress();
 	}
@@ -127,60 +139,12 @@ void OneBlock::incrementAmount()
 	
 	// Check whether the phase has changed.
 	if (!currentPhase.isInPhase(amountDestroyed)) {
-		updateCurrentPhase();
+		updateCurrentPhase(true);
 	}
 }
 
 void OneBlock::printAmountDestroyed()
 {
-	CoordinateInCentimeters loc = center + CoordinateInBlocks(0, 0, 1); // The location to use for the hint text that is spawned, this being the default.
-
-	// Calculate where on a circle with the formula x^2+y^2=1500 to spawn the hint text,
-	// with the default vector being the location of the player relative to the center - 
-	// but if on top of the center block, use the direction the player is looking instead
-	// because it can look pretty funky otherwise.
-	CoordinateInCentimeters playerLoc = GetPlayerLocationHead();
-	CoordinateInCentimeters directionVector = CoordinateInCentimeters(center) - playerLoc; // Default vector to use for calculation.
-
-	if (playerLoc.X >= -25 && playerLoc.X <= 25 && playerLoc.Y >= -25 && playerLoc.Y <= 25) {
-		directionVector = CoordinateInCentimeters(GetPlayerViewDirection() * 100); // Vector to use if on top of center block.
-	}
-
-	// Variables for the quadratic equation. Possibly no need for float.
-	int64_t a = directionVector.X * directionVector.X + directionVector.Y * directionVector.Y;
-	int64_t b = 2 * (playerLoc.X * directionVector.X + playerLoc.Y * directionVector.Y);
-	int64_t c = playerLoc.X * playerLoc.X + playerLoc.Y * playerLoc.Y - 1500;
-
-	int64_t d = b * b - 4 * a * c; // The discriminant.
-
-	if (d > 0) { // Two intersections.
-		double t1 = (-b + sqrt(d)) / (2 * a);
-		double t2 = (-b - sqrt(d)) / (2 * a);
-		double t = 0;
-		if (playerLoc.Z > CoordinateInCentimeters(center).Z + 25) { // If the player's head is above the center block, use the opposite intersection to spawn the hint text at. Otherwise, the hint text will be in the way of the block.
-			t = std::max(t1, t2);
-		}
-		else { // Else, use the first one. Otherwise, the block will be in the way of the hint text.
-			t = std::min(t1, t2);
-			loc.Z = loc.Z - 20;
-		}
-		double x = playerLoc.X + t * directionVector.X;
-		double y = playerLoc.Y + t * directionVector.Y;
-		loc.X = (int)round(x);
-		loc.Y = (int)round(y);
-	}
-	else if (d == 0) { // One intersection - just use the point found. Should technically never happen.
-		double t = (-b) / (2.0 * a);
-		double x = playerLoc.X + t * directionVector.X;
-		double y = playerLoc.Y + t * directionVector.Y;
-		loc.X = (int)round(x);
-		loc.Y = (int)round(y);
-	}
-	// No intersections can also technically never happen because either the player is outside the block,
-	// where the center is then used to calculate the vector to use (meaning there will always be two intersections),
-	// or the player is inside the block, where the direction the player is looking is used as the vector,
-	// meaning there will always be an intersection because the player is always looking out at the circle.
-
 	// Calculate the size of the hint text to be used according to the amount of digits in amountDestroyed.
 	int digits = numDigits(amountDestroyed);
 	float offset = 1.0F;
@@ -190,7 +154,7 @@ void OneBlock::printAmountDestroyed()
 	}
 
 	// Use the custom method to print the hint text.
-	printHintText(loc, std::to_wstring(amountDestroyed), 3, 0.3F * offset, 2.0F / offset, 10);
+	printHintText(getHintTextLocation(50, 40), std::to_wstring(amountDestroyed), 3, 0.3F * offset, 2.0F / offset, 10);
 }
 
 void OneBlock::setOneBlock()
@@ -206,23 +170,23 @@ void OneBlock::setOneBlock()
 			int randomInt = GetRandomInt_2<0, 99>();
 			ignoreBlockPlacement = true;
 
-			// Hardcoded chances.
-			if (randomInt < 2) { // 2% chance
+			// Hardcoded chances for foliage.
+			if (randomInt < 2) { // 2% chance.
 				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::FlowerRainbow);
 			}
-			else if (randomInt < 7) { // 5% chance
+			else if (randomInt < 7) { // 5% chance.
 				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower1);
 			}
-			else if (randomInt < 12) { // 5% chance
+			else if (randomInt < 12) { // 5% chance.
 				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower2);
 			}
-			else if (randomInt < 17) { // 5% chance
+			else if (randomInt < 17) { // 5% chance.
 				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower3);
 			}
-			else if (randomInt < 22) { // 5% chance
+			else if (randomInt < 22) { // 5% chance.
 				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::Flower4);
 			}
-			else if (randomInt < 37) { // 15% chance
+			else if (randomInt < 37) { // 15% chance.
 				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::GrassFoliage);
 			}
 			else {
@@ -233,7 +197,7 @@ void OneBlock::setOneBlock()
 	}
 }
 
-void OneBlock::updateCurrentPhase()
+void OneBlock::updateCurrentPhase(bool printPhase)
 {
 	// Goes through all of the possible phases and updates the current
 	// phase to be the one it should be.
@@ -243,6 +207,10 @@ void OneBlock::updateCurrentPhase()
 			currentPhase = p;
 			break;
 		}
+	}
+
+	if (printPhase) {
+		SpawnHintTextAdvanced(getHintTextLocation(80, 44), L"New phase!\nWelcome to the " + currentPhase.name + L" phase!\n" + currentPhase.description, 7, 1, 1.5F);
 	}
 }
 
@@ -340,6 +308,60 @@ void OneBlock::giveLoot()
 	// Calculate the vertical size of the hint text.
 	size_t differentLoot = loot.size();
 	float sizeMulVer = differentLoot - 2 < 1 ? 0.0F : differentLoot - 2;
+	
 	// Spawn hint text.
-	SpawnHintTextAdvanced(center + CoordinateInBlocks(0, 0, 1), message, 5, 1, 1 + sizeMulVer * 0.3F);
+	SpawnHintTextAdvanced(getHintTextLocation(80, 44), message, 5, 1, 1 + sizeMulVer * 0.3F);
+}
+
+CoordinateInCentimeters OneBlock::getHintTextLocation(int height, int radius)
+{
+	CoordinateInCentimeters loc = center + CoordinateInCentimeters(0, 0, height); // The location to use for the hint text that is spawned - this being the default.
+
+	// Calculate where on a circle with the formula x^2+y^2=radius^2 to spawn the hint text,
+	// with the default vector being the location of the player relative to the center - 
+	// but if on top of the center block, use the direction the player is looking instead
+	// because it can look pretty funky otherwise.
+	CoordinateInCentimeters playerLoc = GetPlayerLocationHead();
+	CoordinateInCentimeters directionVector = CoordinateInCentimeters(center) - playerLoc; // Default vector to use for calculation.
+
+	if (playerLoc.X >= -25 && playerLoc.X <= 25 && playerLoc.Y >= -25 && playerLoc.Y <= 25) {
+		directionVector = CoordinateInCentimeters(GetPlayerViewDirection() * 100); // Vector to use if on top of center block.
+	}
+
+	// Variables for the quadratic equation.
+	int64_t a = directionVector.X * directionVector.X + directionVector.Y * directionVector.Y;
+	int64_t b = 2 * (playerLoc.X * directionVector.X + playerLoc.Y * directionVector.Y);
+	int64_t c = playerLoc.X * playerLoc.X + playerLoc.Y * playerLoc.Y - (radius * radius);
+
+	int64_t d = b * b - 4 * a * c; // The discriminant.
+
+	if (d > 0) { // Two intersections.
+		double t1 = (-b + sqrt(d)) / (2 * a);
+		double t2 = (-b - sqrt(d)) / (2 * a);
+		double t = 0;
+		if (playerLoc.Z > CoordinateInCentimeters(center).Z + 25) { // If the player's head is above the center block, use the opposite intersection to spawn the hint text at. Otherwise, the hint text will be in the way of the block.
+			t = std::max(t1, t2);
+		}
+		else { // Else, use the first one. Otherwise, the block will be in the way of the hint text.
+			t = std::min(t1, t2);
+			loc.Z = loc.Z - 20;
+		}
+		double x = playerLoc.X + t * directionVector.X;
+		double y = playerLoc.Y + t * directionVector.Y;
+		loc.X = (int)round(x);
+		loc.Y = (int)round(y);
+	}
+	else if (d == 0) { // One intersection - just use the point found. Should technically never happen.
+		double t = (-b) / (2.0 * a);
+		double x = playerLoc.X + t * directionVector.X;
+		double y = playerLoc.Y + t * directionVector.Y;
+		loc.X = (int)round(x);
+		loc.Y = (int)round(y);
+	}
+	// No intersections can also technically never happen because either the player is outside the block,
+	// where the center is then used to calculate the vector to use (meaning there will always be two intersections),
+	// or the player is inside the block, where the direction the player is looking is used as the vector,
+	// meaning there will always be an intersection because the player is always looking out at the circle.
+	
+	return loc;
 }

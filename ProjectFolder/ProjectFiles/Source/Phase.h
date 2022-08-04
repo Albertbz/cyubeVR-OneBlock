@@ -10,6 +10,8 @@ class Phase
 public:
 	// The name of the phase.
 	std::wstring name;
+	// The description of the phase.
+	std::wstring description;
 	// The point at which the phase starts.
 	int start;
 	// The point at which the phase ends.

@@ -78,9 +78,14 @@ public:
 	// Sets the OneBlock according to the current phase.
 	void setOneBlock();
 
-	// Updates the phase to the one it's supposed to be according to the amount
-	// of blocks destroyed.
-	void updateCurrentPhase();
+	/*
+	* Updates the phase to the one it's supposed to be according to the amount
+	* of blocks destroyed - and prints the phase if told to (only used when
+	* new phase).
+	* 
+	* @param printPhase Whether to print the "Welcome to phase X" message.
+	*/
+	void updateCurrentPhase(bool printPhase);
 
 	/*
 	* Checks whether the OneBlock world already exists.
@@ -127,4 +132,15 @@ public:
 
 	// Gives the player loot from the current phase.
 	void giveLoot();
+
+	/*
+	* Calculates where on a circle of the given radius from 0,0 that a 
+	* hint text should be spawned.
+	* 
+	* @param height The height offset for the location.
+	* @param radius	The radius of the circle.
+	* 
+	* @return The location that a hint text should be spawned at.
+	*/
+	CoordinateInCentimeters getHintTextLocation(int height, int radius);
 };

@@ -32,7 +32,7 @@ BlockInfo getLootBlockInfoFromWString(std::wstring typeString)
 	static std::unordered_map<std::wstring, BlockInfo> const table =
 	{
 		// All native types.
-		{L"Stone", BlockInfo(EBlockType::StoneMined)},
+		{L"Stone", BlockInfo(EBlockType::StoneMined)}, // StoneMined because this is for AddToInventory purposes.
 		{L"Grass", BlockInfo(EBlockType::Grass)}, // Shouldn't be used.
 		{L"Dirt", BlockInfo(EBlockType::Dirt)},
 		{L"WoodLogDark", BlockInfo(EBlockType::TreeWood)},

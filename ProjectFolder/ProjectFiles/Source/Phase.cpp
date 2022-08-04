@@ -6,6 +6,7 @@
 Phase::Phase()
 {
 	this->name = L"Empty Phase";
+	this->description = L"Empty Description";
 	this->start = 0;
 	this->end = 0;
 	this->blockChoices = {};
@@ -25,9 +26,21 @@ Phase::Phase(std::wstring path)
 	std::getline(file, line);
 	this->name = line;
 
+	// Get the description.
+	std::getline(file, line);
+	std::wstring description;
+	size_t pos = line.find(L"\\n");
+	while (pos != std::wstring::npos) {
+		description = description + std::wstring(line, 0, pos) + L"\n";
+		line = std::wstring(line, pos + 2);
+		pos = line.find(L"\n");
+	}
+	description = description + line;
+	this->description = description;
+
 	// Get the start and end.
 	std::getline(file, line);
-	size_t pos = line.find_first_of(L"-");
+	pos = line.find_first_of(L"-");
 	this->start = std::stoi(std::wstring(line, 0, pos));
 	int end = std::stoi(std::wstring(line, pos + 1));
 	end == -1 ? this->end = INT_MAX : this->end = end; // If end is -1, set it to the max.
@@ -37,7 +50,7 @@ Phase::Phase(std::wstring path)
 	while (std::getline(file, line)) {
 		pos = line.find_first_of(L" ");
 
-		if (pos == std::string::npos) {
+		if (pos == std::wstring::npos) {
 			break;
 		}
 
@@ -62,7 +75,7 @@ Phase::Phase(std::wstring path)
 
 		// If there is no space, i.e., there's an empty line, then it is
 		// the end of the current pool.
-		if (pos == std::string::npos) {
+		if (pos == std::wstring::npos) {
 			pools.push_back(Pool(lootChoices, poolNum));
 			lootChoices = {};
 			poolNum++;

@@ -38,27 +38,28 @@ void Event_BlockPlaced(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved
 // Run every time a block is destroyed
 void Event_BlockDestroyed(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved)
 {
+	CoordinateInCentimeters offset = CoordinateInCentimeters(0, 0, 31);
 	switch (CustomBlockID) {
 	case lootBlockID:
 		world.giveLoot();
 		break;
 	case dirtBlockID:
-		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::Dirt));
+		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::Dirt));
 		break;
 	case grassBlockID:
-		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::Dirt));
+		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::Dirt));
 		break;
 	case sandBlockID:
-		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::Sand));
+		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::Sand));
 		break;
 	case stoneBlockID:
-		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::StoneMined));
+		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::StoneMined));
 		break;
 	case woodLogBirchBlockID:
-		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::TreeWoodBright));
+		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::TreeWoodBright));
 		break;
 	case woodLogDarkBlockID:
-		SpawnBlockItem(world.center + CoordinateInCentimeters(0, 0, 30), BlockInfo(EBlockType::TreeWood));
+		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::TreeWood));
 		break;
 	}
 }
