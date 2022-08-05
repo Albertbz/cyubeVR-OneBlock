@@ -5,4 +5,4 @@ A mod for [cyubeVR](https://store.steampowered.com/app/619500/cyubeVR/) that int
 
 [All releases of this mod](https://github.com/Albertbz/cyubeVR-OneBlock/releases).
 
-This mod is not yet on the Steam Workshop.
+[This mod on the Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2845124210).
