@@ -55,10 +55,6 @@ void OneBlock::load()
 
 	// If it was indeed a OneBlock world, then load phases and progress.
 	if (isOneBlock) {
-		// If somehow the OneBlock has disappeared, this will set it back.
-		if (GetBlock(center).Type == EBlockType::Air) {
-			setOneBlock();
-		}
 
 		// Check if first time world is loaded.
 		LoadModDataString(L"OneBlock\\isFirstLoad", loadedString);
@@ -69,6 +65,11 @@ void OneBlock::load()
 
 		loadPhases();
 		loadProgress();
+
+		// If somehow the OneBlock has disappeared, this will set it back.
+		if (GetBlock(center).Type == EBlockType::Air) {
+			setOneBlock();
+		}
 	}
 }
 
@@ -303,7 +304,7 @@ void OneBlock::giveLoot()
 	for (Loot l : loot) {
 		AddToInventory(l.type, l.amount);
 		message = message + + L"\n" + std::to_wstring(l.amount) + L" ";
-		l.amount > 1 ? message = message + getPluralWString(getWStringFromBlockInfo(l.type)) : message = message + getWStringFromBlockInfo(l.type);
+		l.amount > 1 ? message = message + getPluralWString(getLootWStringFromBlockInfo(l.type)) : message = message + getLootWStringFromBlockInfo(l.type);
 	}
 	// Calculate the vertical size of the hint text.
 	size_t differentLoot = loot.size();

@@ -50,6 +50,8 @@ Phase::Phase(std::wstring path)
 	while (std::getline(file, line)) {
 		pos = line.find_first_of(L" ");
 
+		// If there is no space, that means it is an empty line. And
+		// an empty line means it's the end of the block choices.
 		if (pos == std::wstring::npos) {
 			break;
 		}
@@ -113,7 +115,7 @@ BlockInfo Phase::getRandomBlock()
 			return bc.block;
 		}
 	}
-	return BlockInfo(EBlockType::Air);
+	return BlockInfo(EBlockType::Invalid);
 }
 
 bool Phase::isInPhase(int amountDestroyed)

@@ -99,7 +99,7 @@ BlockInfo getBlockBlockInfoFromWString(std::wstring blockString);
 * 
 * @return The wstring version of the given type.
 */
-std::wstring getWStringFromBlockInfo(BlockInfo type);
+std::wstring getLootWStringFromBlockInfo(BlockInfo type);
 
 /*
 * Gets the plural version of the given wstring (for loot).

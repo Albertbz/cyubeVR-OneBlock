@@ -89,7 +89,7 @@ void Event_Tick()
 	}															// Else if already a OneBlock world, then if the player is out
 	else if (world.isOneBlock) {								// of bounds, teleport the player back to 0,0 and tell them they
 		if (OneBlock::isOutOfBounds(GetPlayerLocation())) {		// were out of bounds.
-			SetPlayerLocation(world.center + CoordinateInBlocks(0, 0, 1));
+			SetPlayerLocation(world.center);
 			world.printHintText(world.center + (GetPlayerLocationHead() - GetPlayerLocation()) + CoordinateInCentimeters(0, 0, 20) + GetPlayerViewDirection() * 40, L"You were out of bounds and\nhave been teleported back\nto the center.", 10);
 		}
 	}
@@ -139,13 +139,17 @@ void Event_AnyBlockPlaced(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 			if (OneBlock::isOutOfBounds(At)) {
 				OneBlock::ignoreBlockPlacement = true;
 				SetBlock(At, EBlockType::Air);
-				AddToInventory(Type, 1);
+				if (!Moved) {
+					AddToInventory(Type, 1);
+				}
 				world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"Block out of bounds.", 5);
 			}
 			else if (At == world.center + CoordinateInBlocks(0, 0, 1) || At == world.center + CoordinateInBlocks(0, 0, 2) || At == world.center + CoordinateInBlocks(0, 0, 3) || At == world.center + CoordinateInBlocks(0, 0, 4)) {
 				OneBlock::ignoreBlockPlacement = true;
 				SetBlock(At, EBlockType::Air);
-				AddToInventory(Type, 1);
+				if (!Moved) {
+					AddToInventory(Type, 1);
+				}
 				world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"You can't place a block\non the 4 blocks\nabove the OneBlock.", 5);
 			}
 		}

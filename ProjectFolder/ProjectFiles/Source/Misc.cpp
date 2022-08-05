@@ -85,7 +85,8 @@ BlockInfo getLootBlockInfoFromWString(std::wstring typeString)
 		{L"WoodPost", BlockInfo(EBlockType::WoodPost)},
 		{L"MetalPot", BlockInfo(EBlockType::MetalPod)},
 		{L"Sandbag", BlockInfo(EBlockType::SandbagPile)},
-		{L"Statue", BlockInfo(EBlockType::SmoothbrainStatue)}
+		{L"Statue", BlockInfo(EBlockType::SmoothbrainStatue)},
+		{L"DryGrass", BlockInfo(EBlockType::DryGrass)}
 	};
 	auto it = table.find(typeString);
 	if (it != table.end()) {
@@ -100,7 +101,7 @@ BlockInfo getBlockBlockInfoFromWString(std::wstring blockString)
 {
 	static std::unordered_map<std::wstring, BlockInfo> const table =
 	{
-		// All mod blocks.
+		// All placeable blocks.
 		{L"Loot", BlockInfo(lootBlockID)},
 		{L"Stone", BlockInfo(stoneBlockID)},
 		{L"Grass", BlockInfo(grassBlockID)},
@@ -108,7 +109,6 @@ BlockInfo getBlockBlockInfoFromWString(std::wstring blockString)
 		{L"WoodLogDark", BlockInfo(woodLogDarkBlockID)},
 		{L"WoodLogBirch", BlockInfo(woodLogBirchBlockID)},
 		{L"Sand", BlockInfo(sandBlockID)},
-		{L"WoodLogDark", BlockInfo(woodLogDarkBlockID)},
 		{L"CoalOre", BlockInfo(EBlockType::Ore_Coal)},
 		{L"IronOre", BlockInfo(EBlockType::Ore_Iron)},
 		{L"CopperOre", BlockInfo(EBlockType::Ore_Copper)},
@@ -124,7 +124,7 @@ BlockInfo getBlockBlockInfoFromWString(std::wstring blockString)
 	}
 }
 
-std::wstring getWStringFromBlockInfo(BlockInfo type)
+std::wstring getLootWStringFromBlockInfo(BlockInfo type)
 {
 	static std::unordered_map<EBlockType, std::wstring> const table =
 	{
@@ -182,7 +182,8 @@ std::wstring getWStringFromBlockInfo(BlockInfo type)
 		{EBlockType::WoodPost, L"Wood Post"},
 		{EBlockType::MetalPod, L"Metal Pot"},
 		{EBlockType::SandbagPile, L"Sandbag"},
-		{EBlockType::SmoothbrainStatue, L"Statue"}
+		{EBlockType::SmoothbrainStatue, L"Statue"},
+		{EBlockType::DryGrass, L"Dry Grass"}
 	};
 	auto it = table.find(type.Type);
 	if (it != table.end()) {
