@@ -38,7 +38,7 @@ void Event_BlockPlaced(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved
 // Run every time a block is destroyed
 void Event_BlockDestroyed(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved)
 {
-	CoordinateInCentimeters offset = CoordinateInCentimeters(0, 0, 31);
+	CoordinateInCentimeters offset = CoordinateInCentimeters(0, 0, 33);
 	switch (CustomBlockID) {
 	case lootBlockID:
 		world.giveLoot();

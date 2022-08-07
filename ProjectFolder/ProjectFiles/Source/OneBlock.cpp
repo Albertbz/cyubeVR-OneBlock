@@ -303,12 +303,12 @@ void OneBlock::giveLoot()
 	// Add loot to player's inventory and append to the message.
 	for (Loot l : loot) {
 		AddToInventory(l.type, l.amount);
-		message = message + + L"\n" + std::to_wstring(l.amount) + L" ";
-		l.amount > 1 ? message = message + getPluralWString(getLootWStringFromBlockInfo(l.type)) : message = message + getLootWStringFromBlockInfo(l.type);
+		message = message + L"\n" + std::to_wstring(l.amount) + L" ";
+		message = message + (l.amount > 1 ? getPluralWString(getLootWStringFromBlockInfo(l.type)) : getLootWStringFromBlockInfo(l.type));
 	}
 	// Calculate the vertical size of the hint text.
-	size_t differentLoot = loot.size();
-	float sizeMulVer = differentLoot - 2 < 1 ? 0.0F : differentLoot - 2;
+	int differentLoot = (int) loot.size();
+	int sizeMulVer = differentLoot - 2 < 1 ? 0 : differentLoot - 2;
 	
 	// Spawn hint text.
 	SpawnHintTextAdvanced(getHintTextLocation(80, 44), message, 5, 1, 1 + sizeMulVer * 0.3F);
