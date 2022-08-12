@@ -99,9 +99,10 @@ void OneBlock::checkHand(bool leftHand, CoordinateInCentimeters initialSpawn)
 		askingIfCreate = false;
 		destroyHintTexts();
 		void* handle = SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"Okay. The world is now being created.\nPlease wait.", -1);
-		create(); // Create OneBlock world.
-		DestroyHintText(handle);
-		SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"The world has now been created.\nGo ahead and leave this world\nand join it!", 10);
+		if (create()) { // Create OneBlock world.
+			DestroyHintText(handle);
+			SpawnHintTextAdvanced(initialSpawn + CoordinateInCentimeters(50, 0, 0), L"The world has now been created.\nGo ahead and leave this world\nand join it!", 10);
+		} 
 	}
 	else if (isBetween(initialSpawn + CoordinateInCentimeters(30, 30, -40), initialSpawn + CoordinateInCentimeters(70, 70, 0), handLoc)) {
 		PlayHapticFeedbackOnHand(leftHand, 0.1, 1, 1);
@@ -237,7 +238,7 @@ bool OneBlock::exists()
 	return res;
 }
 
-void OneBlock::create()
+bool OneBlock::create()
 {
 	// Copy the world from the install folder to the WorldData folder.
 	std::wstring oldPath = GetThisModInstallFolderPath() + L"TemplateWorld";
@@ -245,13 +246,21 @@ void OneBlock::create()
 
 	std::wstring newPath = saveFolderPath.substr(0, saveFolderPath.find(L"WorldData") + 9) + L"\\OneBlock"; // Use the mod save folder path to find the WorldData folder.
 
-	std::filesystem::copy(oldPath, newPath, std::filesystem::copy_options::recursive);
+	try {
+		std::filesystem::copy(oldPath, newPath, std::filesystem::copy_options::recursive);
+	}
+	catch (std::filesystem::filesystem_error const& ex) {
+		std::string message = ex.code().message();
+		SpawnHintTextAdvanced(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"Something went wrong when making the OneBlock world:\n" + std::wstring(message.begin(), message.end()), 10);
+		return false;
+	}
 
 	// Write to the global save file that a OneBlock world now exists.
 	std::wstring globalSaveFolderPath = GetThisModGlobalSaveFolderPath(L"OneBlock");
 	std::ofstream file(globalSaveFolderPath + L"exists.txt");
 	file << "1";
 	file.close();
+	return true;
 }
 
 void OneBlock::destroyHintTexts()

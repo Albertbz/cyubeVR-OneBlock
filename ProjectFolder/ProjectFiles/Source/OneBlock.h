@@ -94,9 +94,13 @@ public:
 	*/
 	static bool exists();
 
-	// Creates the OneBlock world by moving the world files into the WorldData
-	// folder.
-	static void create();
+	/*
+	* Creates the OneBlock world by copying the world files into the WorldData
+	* folder.
+	* 
+	* @return Whether it was succesful.
+	*/
+	static bool create();
 
 	// Destroys all hint texts in the hintTextHandles.
 	static void destroyHintTexts();
