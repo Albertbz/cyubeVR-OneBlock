@@ -71,33 +71,31 @@ Phase::Phase(std::wstring path)
 	// Get all of the possible loot and their amounts.
 	std::vector<LootChoice> lootChoices;
 	std::vector<Pool> pools;
-	int poolNum = 1;
 	while (std::getline(file, line)) {
-		pos = line.find_first_of(L" ");
+		pos = line.find_first_of(L"%");
 
-		// If there is no space, i.e., there's an empty line, then it is
-		// the end of the current pool.
-		if (pos == std::wstring::npos) {
-			pools.push_back(Pool(lootChoices, poolNum));
+		// If there is a % in the line, that means it is the last line for the current
+		// pool, meaning the chance is taken and we skip to the next line.
+		if (pos != std::wstring::npos) {
+			pools.push_back(Pool(lootChoices, std::stoi(std::wstring(line, 0, pos))));
 			lootChoices = {};
-			poolNum++;
-			continue;
 		}
+		else {
+			pos = line.find_first_of(L" ");
+			// Get the loot type.
+			std::wstring typeWString = std::wstring(line, 0, pos);
+			BlockInfo type = getLootBlockInfoFromWString(typeWString);
 
-		// Get the loot type.
-		std::wstring typeWString = std::wstring(line, 0, pos);
-		BlockInfo type = getLootBlockInfoFromWString(typeWString);
+			// Get the loot min and max amounts.
+			std::wstring minAndMax = std::wstring(line, pos + 1);
+			pos = minAndMax.find_first_of(L"-");
 
-		// Get the loot min and max amounts.
-		std::wstring minAndMax = std::wstring(line, pos + 1);
-		pos = minAndMax.find_first_of(L"-");
+			int minAmount = std::stoi(std::wstring(minAndMax, 0, pos));
+			int maxAmount = std::stoi(std::wstring(minAndMax, pos + 1));
 
-		int minAmount = std::stoi(std::wstring(minAndMax, 0, pos));
-		int maxAmount = std::stoi(std::wstring(minAndMax, pos + 1));
-
-		lootChoices.push_back(LootChoice(type, minAmount, maxAmount));
+			lootChoices.push_back(LootChoice(type, minAmount, maxAmount));
+		}
 	}
-	pools.push_back(Pool(lootChoices, poolNum));
 	this->pools = pools;
 }
 
@@ -107,7 +105,7 @@ BlockInfo Phase::getRandomBlock()
 	// the possible blocks and adds their chance to see if they are to
 	// be chosen.
 
-	int randomNum = GetRandomInt_2<1, 100>();
+	int randomNum = GetRandomInt_2<1, 1000>();
 	int currentNum = 0;
 	for (BlockChoice bc : blockChoices) {
 		currentNum += bc.chance;
@@ -129,24 +127,24 @@ std::vector<Loot> Phase::getRandomLoot()
 	// pool and amount for each loot according to their min and max
 	// amounts.
 
-	std::vector<Loot> res;
-
-	std::random_device rd; 
+	std::random_device rd;
 	std::mt19937 gen(rd());
 
-	// Figure out which pool to use.
-	int numOfPools = (int)pools.size();
-	std::uniform_int_distribution<> distrib1(1, numOfPools);
-	int randomPoolNum = distrib1(gen);
-	Pool randomPool = Pool(std::vector<LootChoice>(), 0);
+	int randomNum = GetRandomInt_2<1, 100>();
+	int currentNum = 0;
 
-	// Find the pool.
+	// Figure out which pool to use.
+	Pool randomPool = Pool(std::vector<LootChoice>(), 0);
 	for (Pool p : pools) {
-		if (p.poolNum == randomPoolNum) {
+		currentNum += p.chance;
+		if (randomNum <= currentNum) {
 			randomPool = p;
 			break;
 		}
 	}
+
+	// The resulting loot.
+	std::vector<Loot> resLoot;
 
 	// Choose random amounts of loot from pool.
 	for (LootChoice lc : randomPool.lootChoices) {
@@ -158,8 +156,8 @@ std::vector<Loot> Phase::getRandomLoot()
 			continue;
 		}
 
-		res.push_back(Loot(lc.type, amount));
+		resLoot.push_back(Loot(lc.type, amount));
 	}
 
-	return res;
+	return resLoot;
 }

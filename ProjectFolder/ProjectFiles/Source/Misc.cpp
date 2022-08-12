@@ -21,10 +21,10 @@ Loot::Loot(BlockInfo type, int amount)
 }
 
 
-Pool::Pool(std::vector<LootChoice> lootChoices, int poolNum)
+Pool::Pool(std::vector<LootChoice> lootChoices, int chance)
 {
 	this->lootChoices = lootChoices;
-	this->poolNum = poolNum;
+	this->chance = chance;
 }
 
 BlockInfo getLootBlockInfoFromWString(std::wstring typeString)

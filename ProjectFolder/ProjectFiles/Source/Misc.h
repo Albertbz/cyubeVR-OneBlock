@@ -60,16 +60,16 @@ struct Loot {
 struct Pool {
 	// The loot choices in the pool.
 	std::vector<LootChoice> lootChoices;
-	// The number of the pool.
-	int poolNum;
+	// The chance of the pool being picked.
+	int chance;
 
 	/*
 	* Constructor for the Pool struct.
 	* 
 	* @param lootChoices The loot choices in the pool.
-	* @param poolNum Thhe number of the pool.
+	* @param chance The chance of the pool being picked.
 	*/
-	Pool(std::vector<LootChoice> lootChoices, int poolNum);
+	Pool(std::vector<LootChoice> lootChoices, int chance);
 };
 
 /*
