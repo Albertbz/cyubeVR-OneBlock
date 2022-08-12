@@ -33,11 +33,13 @@ void OneBlock::loadProgress()
 
 void OneBlock::loadPhases()
 {
-	// Get the install folder path and add "Phases" to get the path to the Phases folder.
-	std::wstring phasesDirectoryPath = GetThisModInstallFolderPath() + L"Phases";
+	// Get the Resources folder path and add "Phases" to get the path to the Phases folder.
+	std::wstring installFolderPath = GetThisModInstallFolderPath();
+
+	std::wstring phasesFolderPath = installFolderPath.substr(0, installFolderPath.find(L"Update")) + L"Resources\\Phases"; // Use the install folder path to find the Resources folder.
 
 	// Iterate through all of the files in the Phases folder and add the phases to the phases field.
-	for (const auto& entry : std::filesystem::directory_iterator(phasesDirectoryPath)) {
+	for (const auto& entry : std::filesystem::directory_iterator(phasesFolderPath)) {
 		phases.push_back(Phase(entry.path()));
 	}
 }
@@ -240,10 +242,11 @@ bool OneBlock::exists()
 
 bool OneBlock::create()
 {
-	// Copy the world from the install folder to the WorldData folder.
-	std::wstring oldPath = GetThisModInstallFolderPath() + L"TemplateWorld";
+	// Copy the world from the resources folder to the WorldData folder.
+	std::wstring installFolderPath = GetThisModInstallFolderPath();
 	std::wstring saveFolderPath = GetThisModSaveFolderPath(L"");
 
+	std::wstring oldPath = installFolderPath.substr(0, installFolderPath.find(L"Update")) + L"Resources\\TemplateWorld"; // Use the install folder path to find the Resources folder.
 	std::wstring newPath = saveFolderPath.substr(0, saveFolderPath.find(L"WorldData") + 9) + L"\\OneBlock"; // Use the mod save folder path to find the WorldData folder.
 
 	try {
