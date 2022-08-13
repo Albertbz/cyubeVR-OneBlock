@@ -105,7 +105,7 @@ BlockInfo Phase::getRandomBlock()
 	// the possible blocks and adds their chance to see if they are to
 	// be chosen.
 
-	int randomNum = GetRandomInt_2<1, 1000>();
+	int randomNum = GetRandomInt<1, 1000>();
 	int currentNum = 0;
 	for (BlockChoice bc : blockChoices) {
 		currentNum += bc.chance;
@@ -130,7 +130,7 @@ std::vector<Loot> Phase::getRandomLoot()
 	std::random_device rd;
 	std::mt19937 gen(rd());
 
-	int randomNum = GetRandomInt_2<1, 100>();
+	int randomNum = GetRandomInt<1, 100>();
 	int currentNum = 0;
 
 	// Figure out which pool to use.

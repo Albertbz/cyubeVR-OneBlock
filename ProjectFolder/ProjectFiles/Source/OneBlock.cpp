@@ -171,7 +171,7 @@ void OneBlock::setOneBlock()
 		// If it's a grass block that is being set, sometimes set some foliage
 		// on top of the block as well.
 		if (blockToSet.CustomBlockID == grassBlockID) {
-			int randomInt = GetRandomInt_2<0, 99>();
+			int randomInt = GetRandomInt<0, 99>();
 			ignoreBlockPlacement = true;
 
 			// Hardcoded chances for foliage.
