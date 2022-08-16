@@ -19,8 +19,7 @@ CoordinateInCentimeters initialSpawn;
 	Config Variables (Set these to whatever you need. They are automatically read by the game.)
 *************************************************************/
 
-UniqueID ThisModUniqueIDs[] = { lootBlockID, dirtBlockID, grassBlockID, sandBlockID, stoneBlockID,
-								woodLogBirchBlockID, woodLogDarkBlockID }; // All the UniqueIDs this mod manages. Functions like Event_BlockPlaced are only called for blocks of IDs mentioned here. 
+UniqueID ThisModUniqueIDs[] = { lootBlockID }; // All the UniqueIDs this mod manages. Functions like Event_BlockPlaced are only called for blocks of IDs mentioned here. 
 
 float TickRate = 10;				 // Set how many times per second Event_Tick() is called. 0 means the Event_Tick() function is never called.
 
@@ -38,30 +37,9 @@ void Event_BlockPlaced(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved
 // Run every time a block is destroyed
 void Event_BlockDestroyed(CoordinateInBlocks At, UniqueID CustomBlockID, bool Moved)
 {
-	CoordinateInCentimeters offset = CoordinateInCentimeters(0, 0, 33);
-	switch (CustomBlockID) {
-	case lootBlockID:
-		world.giveLoot();
-		break;
-	case dirtBlockID:
-		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::Dirt));
-		break;
-	case grassBlockID:
-		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::Dirt));
-		break;
-	case sandBlockID:
-		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::Sand));
-		break;
-	case stoneBlockID:
-		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::StoneMined));
-		break;
-	case woodLogBirchBlockID:
-		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::TreeWoodBright));
-		break;
-	case woodLogDarkBlockID:
-		SpawnBlockItem(world.center + offset, BlockInfo(EBlockType::TreeWood));
-		break;
-	}
+	// Can only ever be triggered when a Loot block is destroyed, so no need
+	// to do any checks.
+	world.giveLoot();
 }
 
 
@@ -92,9 +70,13 @@ void Event_Tick()
 			SetPlayerLocation(world.center);
 			world.printHintText(world.center + (GetPlayerLocationHead() - GetPlayerLocation()) + CoordinateInCentimeters(0, 0, 20) + GetPlayerViewDirection() * 40, L"You were out of bounds and\nhave been teleported back\nto the center.", 10);
 		}
+		
+		if (world.isReplacingDrops) {
+			world.isReplacingDrops = false;
+			world.removeNativeDrops();
+			world.spawnCustomDrops();
+		}
 	}
-
-
 }
 
 
@@ -136,6 +118,7 @@ void Event_AnyBlockPlaced(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 	// block they tried to place was out of bounds.
 	if (world.isOneBlock) {
 		if (!OneBlock::ignoreBlockPlacement) { // If this check isn't done, doing SetBlock(At, EBlockType::Air) will make it loop forever.
+			
 			if (OneBlock::isOutOfBounds(At)) {
 				OneBlock::ignoreBlockPlacement = true;
 				SetBlock(At, EBlockType::Air);
@@ -152,6 +135,16 @@ void Event_AnyBlockPlaced(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 				}
 				world.printHintText(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"You can't place a block\non the 4 blocks\nabove the OneBlock.", 5);
 			}
+
+			// If currently moving the regenerating block and it is placed somewhere
+			// that is not the center, increment counter, etc. Otherwise, do nothing.
+			if (Moved && world.isMovingBlock) {
+				world.isMovingBlock = false;
+				if (At != world.center) {
+					world.incrementAmount();
+					world.printAmountDestroyed();
+				}
+			}
 		}
 		else {
 			OneBlock::ignoreBlockPlacement = false;
@@ -165,10 +158,26 @@ void Event_AnyBlockDestroyed(CoordinateInBlocks At, BlockInfo Type, bool Moved)
 	// If the active world is a OneBlock world, and the destroyed block was the center block, then
 	// increment the amount of times it has been destroyed, print this amount, and set a new block.
 	if (world.isOneBlock) {
-		if (At == world.center) {
-			world.incrementAmount();
-			world.printAmountDestroyed();
-			world.setOneBlock();
+		if (!OneBlock::ignoreBlockDestroyment) { // This check is done so that it is possible to change the block via code without incrementing amountDestroyed.
+			if (At == world.center) {
+				// If not moved, then the block was destroyed normally and everything is done.
+				if (!Moved) {
+					world.isReplacingDrops = true;
+					world.previousBlock = Type;
+					world.incrementAmount();
+					world.printAmountDestroyed();
+				}
+				else {
+					world.isMovingBlock = true;
+				}
+
+				// Always set a new block, even in the case that it is
+				// overwritten by a moved block instantly.
+				world.setOneBlock();
+			}
+		}
+		else {
+			OneBlock::ignoreBlockDestroyment = false;
 		}
 	}
 }

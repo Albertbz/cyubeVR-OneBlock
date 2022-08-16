@@ -7,6 +7,7 @@
 bool OneBlock::askingIfCreate = false;
 std::vector<void*> OneBlock::hintTextHandles;
 bool OneBlock::ignoreBlockPlacement = false;
+bool OneBlock::ignoreBlockDestroyment = false;
 
 OneBlock::OneBlock()
 {
@@ -17,6 +18,10 @@ OneBlock::OneBlock()
 	this->phases = {};
 	this->currentPhase = Phase();
 	this->currentHintTextHandle = nullptr;
+	this->drops = std::vector<BlockInfoWithLocation>();
+	this->isReplacingDrops = false;
+	this->previousBlock = BlockInfo();
+	this->isMovingBlock = false;
 }
 
 void OneBlock::loadProgress()
@@ -61,6 +66,7 @@ void OneBlock::load()
 		// Check if first time world is loaded.
 		LoadModDataString(L"OneBlock\\isFirstLoad", loadedString);
 		if (std::stoi(loadedString)) {
+			// Tell the player some stuff.
 			printHintText(GetPlayerLocationHead() + GetPlayerViewDirection() * 50, L"Welcome to OneBlock!\nIf there's ever anything you're unsure of,\ncheck the tutorial in the briefcase - the answer might be there.\nIf it isn't, then feel free to ask on the Workshop.\nTo begin, simply break the block underneath you.\nHave fun!", -1);
 			SaveModDataString(L"OneBlock\\isFirstLoad", L"0");
 		}
@@ -68,8 +74,14 @@ void OneBlock::load()
 		loadPhases();
 		loadProgress();
 
-		// If somehow the OneBlock has disappeared, this will set it back.
-		if (GetBlock(center).Type == EBlockType::Air) {
+		// Do some checks, and fix the OneBlock if something is wrong.
+		BlockInfo type = GetBlock(center);
+		if (type.Type == EBlockType::Air) {// If somehow the OneBlock has disappeared, this will set it back.
+			setOneBlock();
+		}
+		else if (type.Type == EBlockType::ModBlock && type.CustomBlockID != lootBlockID) { // If it's a ModBlock but isn't lootBlock, change it.
+			ignoreBlockDestroyment = true;
+			ignoreBlockPlacement = true;
 			setOneBlock();
 		}
 	}
@@ -170,7 +182,7 @@ void OneBlock::setOneBlock()
 	if (blockToSet.Type != EBlockType::Invalid) {
 		// If it's a grass block that is being set, sometimes set some foliage
 		// on top of the block as well.
-		if (blockToSet.CustomBlockID == grassBlockID) {
+		if (blockToSet.Type == EBlockType::Grass) {
 			int randomInt = GetRandomInt<0, 99>();
 			ignoreBlockPlacement = true;
 
@@ -377,4 +389,84 @@ CoordinateInCentimeters OneBlock::getHintTextLocation(int height, int radius)
 	// meaning there will always be an intersection because the player is always looking out at the circle.
 	
 	return loc;
+}
+
+void OneBlock::removeNativeDrops()
+{
+	// Get the drop of the block and consume all those that are present.
+	BlockInfo drop = getNativeDropFromBlockInfo(previousBlock);
+	drops = ConsumeBlockItems(center, std::vector<BlockInfo> {drop}, 0, CoordinateInCentimeters(25, 25, 25), 5);
+}
+
+void OneBlock::spawnCustomDrops()
+{
+	// Get the number of drops.
+	int numOfDrops = 0;
+	switch (previousBlock.Type) {
+	case EBlockType::ModBlock: // Do nothing.
+		return;
+		break;
+	case EBlockType::TreeWood:
+		numOfDrops = 1;
+		break;
+	case EBlockType::TreeWoodBright:
+		numOfDrops = 1;
+		break;
+	default:
+		numOfDrops = (int)drops.size();
+	}
+	
+	// Get all existing drops.
+	std::vector<BlockInfoWithLocation> existingDrops = ConsumeBlockItems(center + CoordinateInBlocks(0, 0, 2) + CoordinateInCentimeters(0, 0, 25), std::vector<BlockInfo>(), 0, CoordinateInCentimeters(25, 25, 100), 50, true);
+
+	// Get the drop that is to be spawned on top.
+	BlockInfo drop = getCustomDropFromBlockInfo(previousBlock);
+
+	// Spawn all of the drops.
+	CoordinateInCentimeters offset = CoordinateInCentimeters(0, 0, 31); // The offset from the center where block items are spawned.
+	
+	// All possible locations.
+	std::vector<PossibleLocation> possibleLocations = {
+		PossibleLocation(CoordinateInCentimeters(0, 0, 0), true),
+		PossibleLocation(CoordinateInCentimeters(16, 0, 0), true),
+		PossibleLocation(CoordinateInCentimeters(0, 16, 0), true),
+		PossibleLocation(CoordinateInCentimeters(-16, 0, 0), true),
+		PossibleLocation(CoordinateInCentimeters(0, -16, 0), true),
+		PossibleLocation(CoordinateInCentimeters(16, 16, 0), true),
+		PossibleLocation(CoordinateInCentimeters(-16, 16, 0), true),
+		PossibleLocation(CoordinateInCentimeters(-16, -16, 0), true),
+		PossibleLocation(CoordinateInCentimeters(16, -16, 0), true)
+	};
+	bool doDoubleBreak = false; // Used to break out of both for loops.
+	CoordinateInCentimeters centerCm = CoordinateInCentimeters(center);
+	for (int i = 0; i < numOfDrops; i++) {
+		
+		for (int i = centerCm.Z + offset.Z; i <= centerCm.Z + offset.Z + 250; i += 13) {
+			for (PossibleLocation &p : possibleLocations) {
+				p.location.Z = i;
+				p.possible = true;
+			}
+			for (const BlockInfoWithLocation &e : existingDrops) {
+				for (PossibleLocation &p : possibleLocations) {
+					if (p.location.X + 4 >= e.Location.X && p.location.X - 4 <= e.Location.X &&
+						p.location.Y + 4 >= e.Location.Y && p.location.Y - 4 <= e.Location.Y &&
+						p.location.Z + 4 >= e.Location.Z && p.location.Z - 4 <= e.Location.Z) {
+						p.possible = false;
+					}
+				}
+			}
+			for (const PossibleLocation &p : possibleLocations) {
+				if (p.possible) {
+					SpawnBlockItem(p.location, drop);
+					existingDrops.push_back(BlockInfoWithLocation{ drop, p.location });
+					doDoubleBreak = true;
+					break;
+				}
+			}
+			if (doDoubleBreak) {
+				doDoubleBreak = false;
+				break;
+			}
+		}
+	}
 }

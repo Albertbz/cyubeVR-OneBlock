@@ -24,6 +24,16 @@ public:
 	void* currentHintTextHandle;
 	// Whether to ignore when a block is placed.
 	static bool ignoreBlockPlacement;
+	// Whether to ignore when a block is destroyed.
+	static bool ignoreBlockDestroyment;
+	// The drops from the most recent time the OneBlock was destroyed.
+	std::vector<BlockInfoWithLocation> drops;
+	// Whether currently replacing drops.
+	bool isReplacingDrops;
+	// The previous block that was destroyed.
+	BlockInfo previousBlock;
+	// Whether the player is currently moving a block from (0, 0, 200).
+	bool isMovingBlock;
 
 	// Constructor for the OneBlock class.
 	OneBlock();
@@ -147,4 +157,12 @@ public:
 	* @return The location that a hint text should be spawned at.
 	*/
 	CoordinateInCentimeters getHintTextLocation(int height, int radius);
+
+	// Removes the drops that come from the native blocks then they
+	// are destroyed. Updates the drops field.
+	void removeNativeDrops();
+
+	// Spawns the drops that correspond to the block that was just destroyed
+	// at the center block.
+	void spawnCustomDrops();
 };

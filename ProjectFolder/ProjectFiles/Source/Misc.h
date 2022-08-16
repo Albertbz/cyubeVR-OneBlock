@@ -109,3 +109,31 @@ std::wstring getLootWStringFromBlockInfo(BlockInfo type);
 * @return The plural version of the type.
 */
 std::wstring getPluralWString(std::wstring type);
+
+/*
+* Gets the native drop from a given BlockInfo.
+* 
+* @param type The type of the block.
+* 
+* @return The native drop of the given type.
+*/
+BlockInfo getNativeDropFromBlockInfo(BlockInfo type);
+
+/*
+* Gets the custom drop from a given BlockInfo.
+* 
+* @param type The type of the block.
+* 
+* @return The custom drop of the given type.
+*/
+BlockInfo getCustomDropFromBlockInfo(BlockInfo type);
+
+struct PossibleLocation {
+	// The location.
+	CoordinateInCentimeters location;
+	// Whether it is possible.
+	bool possible;
+
+
+	PossibleLocation(CoordinateInCentimeters location, bool possible);
+};

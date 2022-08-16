@@ -103,12 +103,12 @@ BlockInfo getBlockBlockInfoFromWString(std::wstring blockString)
 	{
 		// All placeable blocks.
 		{L"Loot", BlockInfo(lootBlockID)},
-		{L"Stone", BlockInfo(stoneBlockID)},
-		{L"Grass", BlockInfo(grassBlockID)},
-		{L"Dirt", BlockInfo(dirtBlockID)},
-		{L"WoodLogDark", BlockInfo(woodLogDarkBlockID)},
-		{L"WoodLogBirch", BlockInfo(woodLogBirchBlockID)},
-		{L"Sand", BlockInfo(sandBlockID)},
+		{L"Stone", BlockInfo(EBlockType::Stone)},
+		{L"Grass", BlockInfo(EBlockType::Grass)},
+		{L"Dirt", BlockInfo(EBlockType::Dirt)},
+		{L"WoodLogDark", BlockInfo(EBlockType::TreeWood)},
+		{L"WoodLogBirch", BlockInfo(EBlockType::TreeWoodBright)},
+		{L"Sand", BlockInfo(EBlockType::Sand)},
 		{L"CoalOre", BlockInfo(EBlockType::Ore_Coal)},
 		{L"IronOre", BlockInfo(EBlockType::Ore_Iron)},
 		{L"CopperOre", BlockInfo(EBlockType::Ore_Copper)},
@@ -241,4 +241,51 @@ std::wstring getPluralWString(std::wstring type)
 	else {
 		return type;
 	}
+}
+
+BlockInfo getNativeDropFromBlockInfo(BlockInfo type)
+{
+	static std::unordered_map<EBlockType, BlockInfo> const table =
+	{
+		{EBlockType::Stone, BlockInfo(EBlockType::StoneMined)},
+		{EBlockType::Grass, BlockInfo(EBlockType::Dirt)},
+		{EBlockType::Dirt, BlockInfo(EBlockType::Dirt)},
+		{EBlockType::TreeWood, BlockInfo(EBlockType::WoodPlank)},
+		{EBlockType::TreeWoodBright, BlockInfo(EBlockType::WoodPlankBright)},
+		{EBlockType::Sand, BlockInfo(EBlockType::Sand)},
+		{EBlockType::Ore_Coal, BlockInfo(EBlockType::Nugget_Coal)},
+		{EBlockType::Ore_Iron, BlockInfo(EBlockType::Ore_Iron)},
+		{EBlockType::Ore_Copper, BlockInfo(EBlockType::Nugget_Copper)},
+		{EBlockType::Ore_Gold, BlockInfo(EBlockType::Nugget_Gold)},
+		{EBlockType::CrystalBlock, BlockInfo(EBlockType::Crystal)}
+	};
+	auto it = table.find(type.Type);
+	if (it != table.end()) {
+		return it->second;
+	}
+	else {
+		return type;
+	}
+}
+
+BlockInfo getCustomDropFromBlockInfo(BlockInfo type)
+{
+	static std::unordered_map<EBlockType, BlockInfo> const table =
+	{
+		{EBlockType::TreeWood, BlockInfo(EBlockType::TreeWood)},
+		{EBlockType::TreeWoodBright, BlockInfo(EBlockType::TreeWoodBright)},
+	};
+	auto it = table.find(type.Type);
+	if (it != table.end()) {
+		return it->second;
+	}
+	else {
+		return getNativeDropFromBlockInfo(type);
+	}
+}
+
+PossibleLocation::PossibleLocation(CoordinateInCentimeters location, bool possible)
+{
+	this->location = location;
+	this->possible = possible;
 }
