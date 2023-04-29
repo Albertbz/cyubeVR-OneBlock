@@ -101,10 +101,9 @@ Phase::Phase(std::wstring path)
 
 BlockInfo Phase::getRandomBlock()
 {
-	// Chooses a random number between 1 and 100, and then goes through
+	// Chooses a random number between 1 and 1000, and then goes through
 	// the possible blocks and adds their chance to see if they are to
 	// be chosen.
-
 	int randomNum = GetRandomInt<1, 1000>();
 	int currentNum = 0;
 	for (BlockChoice bc : blockChoices) {

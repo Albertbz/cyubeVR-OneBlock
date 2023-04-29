@@ -158,9 +158,9 @@ public:
 	*/
 	CoordinateInCentimeters getHintTextLocation(int height, int radius);
 
-	// Removes the drops that come from the native blocks then they
-	// are destroyed. Updates the drops field.
-	void removeNativeDrops();
+	// Removes the drops that were already spawned. Updates the
+	// drops field.
+	void removeDrops();
 
 	// Spawns the drops that correspond to the block that was just destroyed
 	// at the center block.

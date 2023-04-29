@@ -73,7 +73,7 @@ void Event_Tick()
 		
 		if (world.isReplacingDrops) {
 			world.isReplacingDrops = false;
-			world.removeNativeDrops();
+			world.removeDrops();
 			world.spawnCustomDrops();
 		}
 	}

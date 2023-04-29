@@ -40,7 +40,6 @@ void OneBlock::loadPhases()
 {
 	// Get the Resources folder path and add "Phases" to get the path to the Phases folder.
 	std::wstring installFolderPath = GetThisModInstallFolderPath();
-
 	std::wstring phasesFolderPath = installFolderPath.substr(0, installFolderPath.find(L"Update")) + L"Resources\\Phases"; // Use the install folder path to find the Resources folder.
 
 	// Iterate through all of the files in the Phases folder and add the phases to the phases field.
@@ -75,11 +74,11 @@ void OneBlock::load()
 		loadProgress();
 
 		// Do some checks, and fix the OneBlock if something is wrong.
-		BlockInfo type = GetBlock(center);
-		if (type.Type == EBlockType::Air) {// If somehow the OneBlock has disappeared, this will set it back.
+		BlockInfo block = GetBlock(center);
+		if (block.Type == EBlockType::Air) {// If somehow the OneBlock has disappeared, this will set it back.
 			setOneBlock();
 		}
-		else if (type.Type == EBlockType::ModBlock && type.CustomBlockID != lootBlockID) { // If it's a ModBlock but isn't lootBlock, change it.
+		else if (block.Type == EBlockType::ModBlock && block.CustomBlockID != lootBlockID) { // If it's a ModBlock but isn't lootBlock, change it (happens at first load).
 			ignoreBlockDestroyment = true;
 			ignoreBlockPlacement = true;
 			setOneBlock();
@@ -177,7 +176,6 @@ void OneBlock::setOneBlock()
 {
 	// Gets a random block from the possible blocks in the current phase,
 	// and then sets it.
-
 	BlockInfo blockToSet = currentPhase.getRandomBlock();
 	if (blockToSet.Type != EBlockType::Invalid) {
 		// If it's a grass block that is being set, sometimes set some foliage
@@ -185,7 +183,6 @@ void OneBlock::setOneBlock()
 		if (blockToSet.Type == EBlockType::Grass) {
 			int randomInt = GetRandomInt<0, 99>();
 			ignoreBlockPlacement = true;
-
 			// Hardcoded chances for foliage.
 			if (randomInt < 2) { // 2% chance.
 				SetBlock(center + CoordinateInBlocks(0, 0, 1), EBlockType::FlowerRainbow);
@@ -208,6 +205,7 @@ void OneBlock::setOneBlock()
 			else {
 				ignoreBlockPlacement = false;
 			}
+			
 		}
 		SetBlock(center, blockToSet);
 	}
@@ -232,22 +230,21 @@ void OneBlock::updateCurrentPhase(bool printPhase)
 
 bool OneBlock::exists()
 {
-	// Get the path to the folder where the data is stored and read the
-	// exists.txt file there to see whether the OneBlock world already
-	// exists. Simple stuff.
+	// Get the worlddata folder, check if there is a world with the name "OneBlock".
+	
+	std::wstring saveFolderPath = GetThisModSaveFolderPath(L"");
+	std::wstring path = saveFolderPath.substr(0, saveFolderPath.find(L"WorldData") + 9);
 
-	std::wstring path = GetThisModGlobalSaveFolderPath(L"OneBlock");
-
-	std::string resString;
 	bool res = false;
-
-	std::ifstream file(path + L"exists.txt");
-
-	while (std::getline(file, resString)) {
-		res = std::stoi(resString);
+	// Go through all entries in the path, meaning all the worlds in this case.
+	for (const auto& entry : std::filesystem::directory_iterator(path)) {
+		std::filesystem::path worldName = entry.path().filename();
+		bool isOneBlockWorld = worldName == "OneBlock";
+		if (isOneBlockWorld) {
+			res = true;
+			break;
+		}
 	}
-
-	file.close();
 
 	return res;
 }
@@ -270,11 +267,6 @@ bool OneBlock::create()
 		return false;
 	}
 
-	// Write to the global save file that a OneBlock world now exists.
-	std::wstring globalSaveFolderPath = GetThisModGlobalSaveFolderPath(L"OneBlock");
-	std::ofstream file(globalSaveFolderPath + L"exists.txt");
-	file << "1";
-	file.close();
 	return true;
 }
 
@@ -391,36 +383,45 @@ CoordinateInCentimeters OneBlock::getHintTextLocation(int height, int radius)
 	return loc;
 }
 
-void OneBlock::removeNativeDrops()
+void OneBlock::removeDrops()
 {
-	// Get the drop of the block and consume all those that are present.
-	BlockInfo drop = getNativeDropFromBlockInfo(previousBlock);
-	drops = ConsumeBlockItems(center, std::vector<BlockInfo> {drop}, 0, CoordinateInCentimeters(25, 25, 25), 5);
+	drops = ConsumeBlockItems(center + CoordinateInBlocks(0, 0, 2) + CoordinateInCentimeters(0, 0, 25), std::vector<BlockInfo>(), 0, CoordinateInCentimeters(25, 25, 100), 50);
 }
 
 void OneBlock::spawnCustomDrops()
 {
-	// Get the number of drops.
-	int numOfDrops = 0;
+	int numOfDropsToRemove = 0;
+	BlockInfo typeOfDropsToRemove;
 	switch (previousBlock.Type) {
-	case EBlockType::ModBlock: // Do nothing.
-		return;
-		break;
 	case EBlockType::TreeWood:
-		numOfDrops = 1;
+		numOfDropsToRemove = 5;
+		typeOfDropsToRemove = getNativeDropFromBlockInfo(EBlockType::TreeWood);
+		drops.push_back(BlockInfoWithLocation{ EBlockType::TreeWood });
 		break;
 	case EBlockType::TreeWoodBright:
-		numOfDrops = 1;
+		numOfDropsToRemove = 5;
+		typeOfDropsToRemove = getNativeDropFromBlockInfo(EBlockType::TreeWoodBright);
+		drops.push_back(BlockInfoWithLocation{ EBlockType::TreeWoodBright });
 		break;
-	default:
-		numOfDrops = (int)drops.size();
 	}
-	
-	// Get all existing drops.
-	std::vector<BlockInfoWithLocation> existingDrops = ConsumeBlockItems(center + CoordinateInBlocks(0, 0, 2) + CoordinateInCentimeters(0, 0, 25), std::vector<BlockInfo>(), 0, CoordinateInCentimeters(25, 25, 100), 50, true);
 
-	// Get the drop that is to be spawned on top.
-	BlockInfo drop = getCustomDropFromBlockInfo(previousBlock);
+	auto it = drops.begin();
+	while (it != drops.end()) {
+		if (numOfDropsToRemove > 0) {
+			if (it->Info.Type == typeOfDropsToRemove.Type) {
+				it = drops.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
+		else {
+			break;
+		}
+	}
+
+	// Get all existing drops.
+	std::vector<BlockInfoWithLocation> existingDrops = {};
 
 	// Spawn all of the drops.
 	CoordinateInCentimeters offset = CoordinateInCentimeters(0, 0, 31); // The offset from the center where block items are spawned.
@@ -439,7 +440,7 @@ void OneBlock::spawnCustomDrops()
 	};
 	bool doDoubleBreak = false; // Used to break out of both for loops.
 	CoordinateInCentimeters centerCm = CoordinateInCentimeters(center);
-	for (int i = 0; i < numOfDrops; i++) {
+	for (BlockInfoWithLocation drop : drops) {
 		
 		for (int i = centerCm.Z + offset.Z; i <= centerCm.Z + offset.Z + 250; i += 13) {
 			for (PossibleLocation &p : possibleLocations) {
@@ -457,8 +458,8 @@ void OneBlock::spawnCustomDrops()
 			}
 			for (const PossibleLocation &p : possibleLocations) {
 				if (p.possible) {
-					SpawnBlockItem(p.location, drop);
-					existingDrops.push_back(BlockInfoWithLocation{ drop, p.location });
+					SpawnBlockItem(p.location, drop.Info.Type);
+					existingDrops.push_back(BlockInfoWithLocation{ drop.Info.Type, p.location });
 					doDoubleBreak = true;
 					break;
 				}
