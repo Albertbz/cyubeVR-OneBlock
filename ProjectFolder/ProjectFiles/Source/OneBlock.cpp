@@ -235,18 +235,25 @@ bool OneBlock::exists()
 	std::wstring saveFolderPath = GetThisModSaveFolderPath(L"");
 	std::wstring path = saveFolderPath.substr(0, saveFolderPath.find(L"WorldData") + 9);
 
-	bool res = false;
 	// Go through all entries in the path, meaning all the worlds in this case.
 	for (const auto& entry : std::filesystem::directory_iterator(path)) {
 		std::filesystem::path worldName = entry.path().filename();
 		bool isOneBlockWorld = worldName == "OneBlock";
 		if (isOneBlockWorld) {
-			res = true;
-			break;
+			// Go through all entries in this path too, check if it is actually deleted
+			for (const auto& subEntry : std::filesystem::directory_iterator(entry.path())) {
+				std::filesystem::path folderName = subEntry.path().filename();
+				bool isDeleted = folderName == "WorldIsDeleted";
+				if (isDeleted) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 	}
 
-	return res;
+	return false;
 }
 
 bool OneBlock::create()
@@ -259,6 +266,7 @@ bool OneBlock::create()
 	std::wstring newPath = saveFolderPath.substr(0, saveFolderPath.find(L"WorldData") + 9) + L"\\OneBlock"; // Use the mod save folder path to find the WorldData folder.
 
 	try {
+		std::filesystem::remove_all(newPath);
 		std::filesystem::copy(oldPath, newPath, std::filesystem::copy_options::recursive);
 	}
 	catch (std::filesystem::filesystem_error const& ex) {
@@ -292,7 +300,7 @@ void OneBlock::printHintText(CoordinateInCentimeters location, std::wstring text
 
 bool OneBlock::isOutOfBounds(CoordinateInBlocks location)
 {
-	return location.Z < 10 || location.X < -600 || location.X > 600 || location.Y < -600 || location.Y > 600;
+	return location.Z < 10 || location.Z > 810 || location.X < -600 || location.X > 600 || location.Y < -600 || location.Y > 600;
 }
 
 int OneBlock::numDigits(int number)
@@ -385,7 +393,7 @@ CoordinateInCentimeters OneBlock::getHintTextLocation(int height, int radius)
 
 void OneBlock::removeDrops()
 {
-	drops = ConsumeBlockItems(center + CoordinateInBlocks(0, 0, 2) + CoordinateInCentimeters(0, 0, 25), std::vector<BlockInfo>(), 0, CoordinateInCentimeters(25, 25, 100), 50);
+	drops = ConsumeBlockItems(center + CoordinateInBlocks(0, 0, 2), std::vector<BlockInfo>(), 0, CoordinateInCentimeters(25, 25, 100), 50);
 }
 
 void OneBlock::spawnCustomDrops()
